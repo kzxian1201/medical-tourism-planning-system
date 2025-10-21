@@ -1,0 +1,57 @@
+/*
+ * frontend/styles/globals.css
+ * This file contains global CSS styles for the Next.js application,
+ * including Tailwind CSS directives, font imports, and base body styles.
+ */
+
+/* Import Tailwind CSS base styles, components, and utilities. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import the 'Inter' font from Google Fonts for consistent typography. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* Base styles for the HTML and body elements. */
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: 'Inter', sans-serif; /* Apply the imported 'Inter' font */
+}
+
+/* Custom scrollbar styles for WebKit browsers (e.g., Chrome, Safari). */
+::-webkit-scrollbar {
+  width: 8px;  /* Width of the vertical scrollbar */
+  height: 8px; /* Height of the horizontal scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1); /* Transparent white for the scrollbar track */
+  border-radius: 10px; /* Rounded corners for the track */
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3); /* Semi-transparent white for the scrollbar thumb */
+  border-radius: 10px; /* Rounded corners for the thumb */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5); /* Lighter on hover */
+}
+
+/* General-purpose transition class for smooth visual changes. */
+.transition-all-ease {
+  transition: all 0.3s ease-in-out; /* Apply a smooth transition to all properties */
+}
+
+/* Styles for text selection. */
+/* Uses Tailwind CSS generated CSS variables for theme consistency. */
+::selection {
+  background: var(--tw-colors-primary-light); /* Background color of selected text */
+  color: var(--tw-colors-primary-dark);    /* Text color of selected text */
+}
+::-moz-selection { /* For Firefox */
+  background: var(--tw-colors-primary-light);
+  color: var(--tw-colors-primary-dark);
+}

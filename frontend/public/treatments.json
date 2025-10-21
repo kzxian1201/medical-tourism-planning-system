@@ -1,0 +1,414 @@
+[
+  {
+    "id": "treatment_001",
+    "name": "Rhinoplasty",
+    "associated_specialties": ["Plastic Surgery"],
+    "description": "A surgical procedure to reshape or resize the nose for aesthetic enhancement or functional improvement.",
+    "procedure_complexity_level": "Moderate",
+    "typical_hospital_stay": {
+      "min_value": 1,
+      "max_value": 2,
+      "unit": "days",
+      "notes": "some outpatient cases"
+    },
+    "estimated_recovery_time": {
+      "min_value": 2,
+      "min_unit": "weeks",
+      "max_value": 4,
+      "max_unit": "weeks",
+      "full_recovery_notes": "up to 3 months for swelling resolution"
+    },
+    "common_benefits": ["Improved nasal appearance", "Corrected breathing difficulties", "Enhanced facial symmetry"],
+    "potential_risks": ["Infection", "Asymmetry", "Breathing complications", "Visible scarring"],
+    "pre_procedure_requirements": ["Smoking cessation", "Preoperative evaluation", "Facial imaging"],
+    "post_procedure_follow_ups": ["Stitch removal after 7 days", "Follow-ups at 1 and 3 months"],
+    "estimated_market_cost_range_usd_min": 4000,
+    "estimated_market_cost_range_usd_max": 8000,
+    "cost_unit": "per procedure",
+    "price_notes": "",
+    "cost_breakdown_notes": "Typically includes surgeon's fee, anesthesia, and facility costs."
+  },
+  {
+    "id": "treatment_002",
+    "name": "Knee Replacement Surgery",
+    "associated_specialties": ["Orthopedic Surgery"],
+    "description": "Surgical replacement of a damaged knee joint with an artificial implant to restore mobility and reduce pain.",
+    "procedure_complexity_level": "High",
+    "typical_hospital_stay": {
+      "min_value": 3,
+      "max_value": 5,
+      "unit": "days",
+      "notes": ""
+    },
+    "estimated_recovery_time": {
+      "min_value": 6,
+      "max_value": 12,
+      "unit": "weeks",
+      "notes": ""
+    },
+    "common_benefits": ["Pain relief", "Restored joint function", "Improved mobility"],
+    "potential_risks": ["Infection", "Blood clots", "Implant complications"],
+    "pre_procedure_requirements": ["X-rays or MRI", "Physical examination", "Anaesthesia assessment"],
+    "post_procedure_follow_ups": ["Physiotherapy sessions", "Routine imaging", "Joint function monitoring"],
+    "estimated_market_cost_range_usd_min": 10000,
+    "estimated_market_cost_range_usd_max": 20000,
+    "cost_unit": "per procedure",
+    "price_notes": "",
+    "cost_breakdown_notes": "Generally includes surgeon's fee, implant, anesthesia, and hospital stay."
+  },
+  {
+    "id": "treatment_003",
+    "name": "Heart Bypass Surgery (CABG)",
+    "associated_specialties": ["Cardiac Surgery"],
+    "description": "A procedure to bypass blocked coronary arteries, improving heart blood flow using graft vessels.",
+    "procedure_complexity_level": "Very High",
+    "typical_hospital_stay": {
+      "min_value": 7,
+      "max_value": 10,
+      "unit": "days",
+      "notes": ""
+    },
+    "estimated_recovery_time": {
+      "min_value": 6,
+      "max_value": 12,
+      "unit": "weeks",
+      "notes": ""
+    },
+    "common_benefits": ["Reduced chest pain", "Improved heart function", "Extended life expectancy"],
+    "potential_risks": ["Arrhythmia", "Infection", "Stroke"],
+    "pre_procedure_requirements": ["Cardiac catheterisation", "ECG", "Comprehensive pre-op tests"],
+    "post_procedure_follow_ups": ["Cardiac rehabilitation", "Lifestyle counselling", "Regular check-ups"],
+    "estimated_market_cost_range_usd_min": 15000,
+    "estimated_market_cost_range_usd_max": 25000,
+    "cost_unit": "per procedure",
+    "price_notes": "",
+    "cost_breakdown_notes": "Covers surgical fees, hospitalization, and initial post-op care."
+  },
+  {
+    "id": "treatment_004",
+    "name": "In Vitro Fertilisation (IVF)",
+    "associated_specialties": ["Reproductive Medicine", "Gynaecology"],
+    "description": "Assisted reproduction technique involving fertilisation of eggs in a laboratory, followed by embryo transfer.",
+    "procedure_complexity_level": "High",
+    "typical_hospital_stay": {
+      "min_value": null,
+      "max_value": null,
+      "unit": "outpatient",
+      "notes": ""
+    },
+    "estimated_recovery_time": {
+      "notes": "Minimal physical downtime; pregnancy confirmation after 2 weeks"
+    },
+    "common_benefits": ["Increased pregnancy chances", "Assists with infertility", "Genetic screening options"],
+    "potential_risks": ["Multiple pregnancies", "Ovarian hyperstimulation", "Emotional distress"],
+    "pre_procedure_requirements": ["Fertility assessments", "Hormone tests", "Partner evaluation"],
+    "post_procedure_follow_ups": ["Pregnancy testing", "Ultrasound scans", "Ongoing hormonal monitoring"],
+    "estimated_market_cost_range_usd_min": 5000,
+    "estimated_market_cost_range_usd_max": 12000,
+    "cost_unit": "per cycle",
+    "price_notes": "Excludes medication.",
+    "cost_breakdown_notes": "Typically includes egg retrieval, fertilization, and embryo transfer."
+  },
+  {
+    "id": "treatment_005",
+    "name": "Dental Implants",
+    "associated_specialties": ["Dentistry", "Oral and Maxillofacial Surgery"],
+    "description": "Surgical placement of artificial roots and crowns to replace missing teeth, restoring function and aesthetics.",
+    "procedure_complexity_level": "Moderate",
+    "typical_hospital_stay": {
+      "min_value": null,
+      "max_value": null,
+      "unit": "outpatient",
+      "notes": ""
+    },
+    "estimated_recovery_time": {
+      "min_value": 2,
+      "max_value": 4,
+      "unit": "weeks",
+      "full_recovery_notes": "full osseointegration in several months"
+    },
+    "common_benefits": ["Permanent tooth replacement", "Enhanced chewing ability", "Aesthetic smile restoration"],
+    "potential_risks": ["Infection", "Implant failure", "Nerve injury"],
+    "pre_procedure_requirements": ["Dental imaging", "Oral examination", "Bone density evaluation"],
+    "post_procedure_follow_ups": ["Healing assessment", "Crown placement", "Ongoing oral hygiene reviews"],
+    "estimated_market_cost_range_usd_min": 1500,
+    "estimated_market_cost_range_usd_max": 3500,
+    "cost_unit": "per implant",
+    "price_notes": "Excluding additional procedures like bone grafting.",
+    "cost_breakdown_notes": "Covers implant placement and crown; additional procedures like bone grafting are extra."
+  },
+  {
+    "id": "treatment_006",
+    "name": "Breast Augmentation",
+    "associated_specialties": ["Plastic Surgery"],
+    "description": "Cosmetic surgery to enhance breast size and shape using implants or fat transfer techniques.",
+    "procedure_complexity_level": "Moderate",
+    "typical_hospital_stay": {
+      "min_value": 0,
+      "max_value": 2,
+      "unit": "days",
+      "notes": "Can be outpatient or short stay."
+    },
+    "estimated_recovery_time": {
+      "min_value": 4,
+      "max_value": 6,
+      "unit": "weeks",
+      "notes": ""
+    },
+    "common_benefits": ["Enhanced body contours", "Improved self-confidence"],
+    "potential_risks": ["Capsular contracture", "Implant rupture", "Infection"],
+    "pre_procedure_requirements": ["Breast measurements", "Implant selection consultation", "Health screening"],
+    "post_procedure_follow_ups": ["Implant monitoring", "Scar management", "Routine check-ups"],
+    "estimated_market_cost_range_usd_min": 6000,
+    "estimated_market_cost_range_usd_max": 12000,
+    "cost_unit": "per procedure",
+    "price_notes": "",
+    "cost_breakdown_notes": "Includes surgeon's fee, implants, and anesthesia."
+  },
+  {
+    "id": "treatment_007",
+    "name": "Lasik Eye Surgery",
+    "associated_specialties": ["Ophthalmology"],
+    "description": "Laser surgery reshaping the cornea to correct refractive errors such as nearsightedness or astigmatism.",
+    "procedure_complexity_level": "Low",
+    "typical_hospital_stay": {
+      "min_value": null,
+      "max_value": null,
+      "unit": "outpatient",
+      "notes": ""
+    },
+    "estimated_recovery_time": {
+      "min_value": 2,
+      "max_value": 7,
+      "unit": "days",
+      "notes": "for vision stabilisation"
+    },
+    "common_benefits": ["Clearer vision", "Reduced dependency on glasses or contact lenses"],
+    "potential_risks": ["Dry eyes", "Night glare", "Under- or over-correction"],
+    "pre_procedure_requirements": ["Corneal mapping", "Vision assessment", "Eye health screening"],
+    "post_procedure_follow_ups": ["Next-day check-up", "1-week and 1-month follow-ups"],
+    "estimated_market_cost_range_usd_min": 1200,
+    "estimated_market_cost_range_usd_max": 2500,
+    "cost_unit": "per eye",
+    "price_notes": "",
+    "cost_breakdown_notes": "Per eye, includes consultation and post-operative checks."
+  },
+  {
+    "id": "treatment_008",
+    "name": "Prostatectomy (Prostate Cancer Surgery)",
+    "associated_specialties": ["Urology", "Oncology"],
+    "description": "Surgical removal of all or part of the prostate gland to treat localised prostate cancer.",
+    "procedure_complexity_level": "High",
+    "typical_hospital_stay": {
+      "min_value": 2,
+      "max_value": 4,
+      "unit": "days",
+      "notes": ""
+    },
+    "estimated_recovery_time": {
+      "min_value": 4,
+      "max_value": 8,
+      "unit": "weeks",
+      "notes": ""
+    },
+    "common_benefits": ["Cancer removal", "Improved survival", "Reduced urinary obstruction"],
+    "potential_risks": ["Erectile dysfunction", "Incontinence", "Bleeding"],
+    "pre_procedure_requirements": ["PSA testing", "Biopsy", "Imaging studies"],
+    "post_procedure_follow_ups": ["PSA monitoring", "Rehabilitation support", "Urology reviews"],
+    "estimated_market_cost_range_usd_min": 8000,
+    "estimated_market_cost_range_usd_max": 15000,
+    "cost_unit": "per procedure",
+    "price_notes": "",
+    "cost_breakdown_notes": "Covers surgical removal, anesthesia, and hospital stay."
+  },
+  {
+    "id": "treatment_009",
+    "name": "Gastric Bypass Surgery",
+    "associated_specialties": ["Bariatric Surgery", "General Surgery"],
+    "description": "Weight-loss surgery reducing stomach size and bypassing parts of the intestine to promote substantial weight loss.",
+    "procedure_complexity_level": "Very High",
+    "typical_hospital_stay": {
+      "min_value": 3,
+      "max_value": 5,
+      "unit": "days",
+      "notes": ""
+    },
+    "estimated_recovery_time": {
+      "min_value": 4,
+      "max_value": 6,
+      "unit": "weeks",
+      "notes": "for initial healing; lifelong diet adjustments required"
+    },
+    "common_benefits": ["Significant weight loss", "Improved metabolic health", "Diabetes control"],
+    "potential_risks": ["Nutrient deficiencies", "Surgical leakage", "Gallstones"],
+    "pre_procedure_requirements": ["Nutritional counselling", "Psychological assessment", "Pre-op diet plan"],
+    "post_procedure_follow_ups": ["Nutritional monitoring", "Vitamin supplementation", "Weight tracking"],
+    "estimated_market_cost_range_usd_min": 12000,
+    "estimated_market_cost_range_usd_max": 20000,
+    "cost_unit": "per procedure",
+    "price_notes": "",
+    "cost_breakdown_notes": "Includes surgical fees, hospitalization, and initial dietary counseling."
+  },
+  {
+    "id": "treatment_010",
+    "name": "Spinal Fusion Surgery",
+    "associated_specialties": ["Orthopaedic Spine Surgery", "Neurosurgery"],
+    "description": "Surgical fusion of two or more vertebrae to stabilise the spine and relieve chronic back or nerve pain.",
+    "procedure_complexity_level": "High",
+    "typical_hospital_stay": {
+      "min_value": 3,
+      "max_value": 7,
+      "unit": "days",
+      "notes": ""
+    },
+    "estimated_recovery_time": {
+      "min_value": 3,
+      "max_value": 6,
+      "unit": "months",
+      "notes": "with physiotherapy"
+    },
+    "common_benefits": ["Spinal stability", "Pain reduction", "Improved mobility"],
+    "potential_risks": ["Adjacent segment degeneration", "Infection", "Hardware failure"],
+    "pre_procedure_requirements": ["Spine imaging", "Neurological evaluation", "Physical therapy preparation"],
+    "post_procedure_follow_ups": ["Mobility assessments", "Rehabilitation", "Follow-up imaging"],
+    "estimated_market_cost_range_usd_min": 15000,
+    "estimated_market_cost_range_usd_max": 25000,
+    "cost_unit": "per procedure",
+    "price_notes": "",
+    "cost_breakdown_notes": "Covers surgical fees, implants, anesthesia, and hospital stay."
+  },
+  {
+    "id": "treatment_011",
+    "name": "Liver Transplant",
+    "associated_specialties": ["Transplant Surgery", "Hepatology"],
+    "description": "A complex surgical procedure to replace a diseased liver with a healthy donor organ, primarily for patients with end-stage liver failure.",
+    "procedure_complexity_level": "Very High",
+    "typical_hospital_stay": {
+      "min_value": 2,
+      "max_value": 4,
+      "unit": "weeks",
+      "notes": ""
+    },
+    "estimated_recovery_time": {
+      "min_value": 3,
+      "max_value": 6,
+      "unit": "months",
+      "full_recovery_notes": "up to 1 year for full adjustment"
+    },
+    "common_benefits": ["Life-saving for liver failure", "Improved long-term survival", "Enhanced quality of life"],
+    "potential_risks": ["Organ rejection", "Infection", "Post-operative liver dysfunction"],
+    "pre_procedure_requirements": ["Donor matching", "Liver function tests", "Comprehensive medical evaluation"],
+    "post_procedure_follow_ups": ["Immunosuppressive therapy", "Frequent monitoring", "Lifestyle management"],
+    "estimated_market_cost_range_usd_min": 80000,
+    "estimated_market_cost_range_usd_max": 120000,
+    "cost_unit": "per procedure",
+    "price_notes": "",
+    "cost_breakdown_notes": "Includes surgical fees, donor organ (if applicable), extensive pre- and post-operative care."
+  },
+  {
+    "id": "treatment_012",
+    "name": "Cataract Surgery",
+    "associated_specialties": ["Ophthalmology"],
+    "description": "A common eye surgery to remove a cloudy lens and replace it with an artificial intraocular lens, restoring vision clarity.",
+    "procedure_complexity_level": "Low",
+    "typical_hospital_stay": {
+      "min_value": null,
+      "max_value": null,
+      "unit": "outpatient",
+      "notes": ""
+    },
+    "estimated_recovery_time": {
+      "min_value": 1,
+      "max_value": 2,
+      "unit": "weeks",
+      "full_recovery_notes": "full stabilisation within 1 month"
+    },
+    "common_benefits": ["Clearer vision", "Enhanced quality of life", "Reduced visual impairment"],
+    "potential_risks": ["Infection", "Retinal detachment", "Residual vision problems"],
+    "pre_procedure_requirements": ["Ocular examination", "Lens measurements", "Medical clearance"],
+    "post_procedure_follow_ups": ["Next-day check-up", "Follow-ups at 1 week and 1 month"],
+    "estimated_market_cost_range_usd_min": 1000,
+    "estimated_market_cost_range_usd_max": 2000,
+    "cost_unit": "per eye",
+    "price_notes": "Including pre-operative assessments and post-operative care.",
+    "cost_breakdown_notes": "Per eye, includes lens implant, pre-operative assessments and post-operative care."
+  },
+  {
+    "id": "treatment_013",
+    "name": "Chemotherapy",
+    "associated_specialties": ["Oncology"],
+    "description": "The use of drugs to destroy cancer cells or slow their growth, administered in cycles via infusion or oral medication.",
+    "procedure_complexity_level": "Moderate to High",
+    "typical_hospital_stay": {
+      "min_value": null,
+      "max_value": null,
+      "unit": "outpatient/inpatient",
+      "notes": "Mostly outpatient; some inpatient for intensive regimens"
+    },
+    "estimated_recovery_time": {
+      "notes": "Varies by treatment plan; supportive care needed throughout"
+    },
+    "common_benefits": ["Tumor shrinkage", "Cancer control", "Enhanced survival when combined with other therapies"],
+    "potential_risks": ["Fatigue", "Nausea", "Hair loss", "Weakened immunity"],
+    "pre_procedure_requirements": ["Cancer staging", "Laboratory tests", "Treatment planning"],
+    "post_procedure_follow_ups": ["Regular blood tests", "Imaging scans", "Oncology reviews"],
+    "estimated_market_cost_range_usd_min": 500,
+    "estimated_market_cost_range_usd_max": 5000,
+    "cost_unit": "per regimen",
+    "price_notes": "Cost varies widely based on drug regimen, duration, and healthcare provider.",
+    "cost_breakdown_notes": "Cost varies significantly based on drug type, dosage, and number of cycles."
+  },
+  {
+    "id": "treatment_014",
+    "name": "Hair Transplant",
+    "associated_specialties": ["Plastic Surgery", "Dermatology"],
+    "description": "A minimally invasive procedure where healthy hair follicles are transplanted to areas affected by hair loss.",
+    "procedure_complexity_level": "Low to Moderate",
+    "typical_hospital_stay": {
+      "min_value": null,
+      "max_value": null,
+      "unit": "outpatient",
+      "notes": ""
+    },
+    "estimated_recovery_time": {
+      "min_value": 1,
+      "max_value": 2,
+      "unit": "weeks",
+      "full_recovery_notes": "visible results within 3–6 months"
+    },
+    "common_benefits": ["Restored hair growth", "Improved aesthetics", "Boosted self-confidence"],
+    "potential_risks": ["Scarring", "Uneven hair growth", "Infection"],
+    "pre_procedure_requirements": ["Scalp examination", "Donor area assessment", "Medical history review"],
+    "post_procedure_follow_ups": ["1-week follow-up", "Monthly hair growth assessments"],
+    "estimated_market_cost_range_usd_min": 3000,
+    "estimated_market_cost_range_usd_max": 7000,
+    "cost_unit": "per procedure",
+    "price_notes": "",
+    "cost_breakdown_notes": "Includes follicle extraction, implantation, and initial follow-up."
+  },
+  {
+    "id": "treatment_015",
+    "name": "Comprehensive Health Check-up",
+    "associated_specialties": ["Preventive Medicine", "Internal Medicine"],
+    "description": "A complete medical screening package to assess overall health status, detect diseases early, and provide personalised health recommendations.",
+    "procedure_complexity_level": "Very Low",
+    "typical_hospital_stay": {
+      "min_value": null,
+      "max_value": null,
+      "unit": "hours/days",
+      "notes": "Half-day to full-day, depending on selected package"
+    },
+    "estimated_recovery_time": {
+      "notes": "Immediate resumption of daily activities"
+    },
+    "common_benefits": ["Early disease detection", "Risk factor assessment", "Peace of mind"],
+    "potential_risks": ["Minor discomfort from tests", "False positives or incidental findings"],
+    "pre_procedure_requirements": ["Fasting if required", "Medical history questionnaire", "Previous health records"],
+    "post_procedure_follow_ups": ["Doctor consultation for results", "Lifestyle counselling", "Further testing if needed"],
+    "estimated_market_cost_range_usd_min": 200,
+    "estimated_market_cost_range_usd_max": 1000,
+    "cost_unit": "per package",
+    "price_notes": "Cost varies based on tests included; may include blood tests, imaging, and specialist consultations.",
+    "cost_breakdown_notes": "Covers various tests, screenings, and doctor consultation based on package."
+  }
+]

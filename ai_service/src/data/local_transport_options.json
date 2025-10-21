@@ -1,0 +1,234 @@
+[
+  {
+    "country": "Malaysia",
+    "city": "Kuala Lumpur",
+    "options": [
+      {
+        "id": "my-kl-01",
+        "service_name": "MedicVan Express",
+        "type": "Medical Transport Van",
+        "provider": "MedicVan Malaysia",
+        "estimated_cost_per_transfer_usd": "$40 - $80",
+        "contact_info": "+60 3-9200 1234",
+        "notes": "Suitable for non-emergency transfers, requires 24-hour advance booking, supports various payment methods",
+        "country": "Malaysia",
+        "city": "Kuala Lumpur",
+        "accessibility_features": [
+          "Wheelchair ramp",
+          "Hydraulic lift",
+          "Stretcher accessible",
+          "Medical staff escort optional"
+        ]
+      },
+      {
+        "id": "my-kl-02",
+        "service_name": "GrabAssist",
+        "type": "Ride-hailing",
+        "provider": "Grab Malaysia",
+        "estimated_cost_per_transfer_usd": "$10 - $25",
+        "contact_info": "",
+        "notes": "Book via Grab App, suitable for individuals with mild mobility impairment",
+        "country": "Malaysia",
+        "city": "Kuala Lumpur",
+        "accessibility_features": [
+          "Wheelchair ramp",
+          "Priority pickup"
+        ]
+      },
+      {
+        "id": "my-kl-03",
+        "service_name": "KMI Ambulance",
+        "type": "Ambulance",
+        "provider": "KMI Healthcare",
+        "estimated_cost_per_transfer_usd": "$80 - $150",
+        "contact_info": "+60 3-4043 7654",
+        "notes": "Equipped with emergency first-aid equipment, suitable for inter-hospital transfers",
+        "country": "Malaysia",
+        "city": "Kuala Lumpur",
+        "accessibility_features": [
+          "Stretcher accessible",
+          "Oxygen support onboard",
+          "Medical staff escort optional"
+        ]
+      },
+      {
+        "id": "my-kl-04",
+        "service_name": "Private Hospital Shuttle",
+        "type": "Hospital Shuttle",
+        "provider": "Prince Court Medical Centre",
+        "estimated_cost_per_transfer_usd": "Free - $10",
+        "contact_info": "https://www.princecourt.com",
+        "notes": "Hospital-provided free or low-cost shuttle, requires booking through the official website",
+        "country": "Malaysia",
+        "city": "Kuala Lumpur",
+        "accessibility_features": [
+          "Wheelchair ramp",
+          "Hospital staff assistance"
+        ]
+      }
+    ]
+  },
+  {
+    "country": "Singapore",
+    "city": "Singapore",
+    "options": [
+      {
+        "id": "sg-sg-01",
+        "service_name": "Comfort Ambulance Services",
+        "type": "Ambulance",
+        "provider": "Comfort Ambulance",
+        "estimated_cost_per_transfer_usd": "$100 - $200",
+        "contact_info": "+65 6777 1111",
+        "notes": "Equipped with advanced medical facilities, suitable for emergency and non-emergency situations",
+        "country": "Singapore",
+        "city": "Singapore",
+        "accessibility_features": [
+          "Stretcher accessible",
+          "Oxygen support onboard",
+          "Medical staff escort optional",
+          "Patient hoist available"
+        ]
+      },
+      {
+        "id": "sg-sg-02",
+        "service_name": "SilverFleet Medical Transport",
+        "type": "Medical Transport Van",
+        "provider": "SilverFleet",
+        "estimated_cost_per_transfer_usd": "$50 - $90",
+        "contact_info": "+65 6255 5678",
+        "notes": "Suitable for elderly or chronic patients, offers door-to-door service",
+        "country": "Singapore",
+        "city": "Singapore",
+        "accessibility_features": [
+          "Hydraulic lift",
+          "Wheelchair ramp",
+          "Medical staff escort optional"
+        ]
+      },
+      {
+        "id": "sg-sg-03",
+        "service_name": "GrabAssist Plus",
+        "type": "Ride-hailing",
+        "provider": "Grab Singapore",
+        "estimated_cost_per_transfer_usd": "$15 - $35",
+        "contact_info": "",
+        "notes": "Book via Grab App, fleet optimized for special needs",
+        "country": "Singapore",
+        "city": "Singapore",
+        "accessibility_features": [
+          "Wheelchair ramp",
+          "Priority pickup",
+          "Driver trained in assisting elderly"
+        ]
+      }
+    ]
+  },
+  {
+    "country": "Indonesia",
+    "city": "Jakarta",
+    "options": [
+      {
+        "id": "id-jk-01",
+        "service_name": "ProCare Ambulance",
+        "type": "Ambulance",
+        "provider": "ProCare Indonesia",
+        "estimated_cost_per_transfer_usd": "$70 - $130",
+        "contact_info": "+62 21 5088 9876",
+        "notes": "Provides basic and advanced life support services, operating 24 hours",
+        "country": "Indonesia",
+        "city": "Jakarta",
+        "accessibility_features": [
+          "Stretcher accessible",
+          "Oxygen support onboard",
+          "Medical staff escort optional"
+        ]
+      },
+      {
+        "id": "id-jk-02",
+        "service_name": "Gojek Health Transport",
+        "type": "Motorbike or Car",
+        "provider": "Gojek",
+        "estimated_cost_per_transfer_usd": "$5 - $15",
+        "contact_info": "",
+        "notes": "Book via Gojek App, suitable for short distances and non-emergency situations",
+        "country": "Indonesia",
+        "city": "Jakarta",
+        "accessibility_features": [
+          "Driver assistance for boarding",
+          "Flexible pickup time"
+        ]
+      },
+      {
+        "id": "id-jk-03",
+        "service_name": "RS Siloam Shuttle",
+        "type": "Hospital Shuttle",
+        "provider": "Siloam Hospitals",
+        "estimated_cost_per_transfer_usd": "Free - $10",
+        "contact_info": "https://www.siloamhospitals.com",
+        "notes": "Requires booking through the hospital registration system, only for hospital-related services",
+        "country": "Indonesia",
+        "city": "Jakarta",
+        "accessibility_features": [
+          "Wheelchair ramp",
+          "Hospital staff assistance",
+          "AC and reclining seats"
+        ]
+      }
+    ]
+  },
+  {
+    "country": "Thailand",
+    "city": "Bangkok",
+    "options": [
+      {
+        "id": "th-bk-01",
+        "service_name": "Bangkok MedEvac",
+        "type": "Ambulance",
+        "provider": "Bangkok MedEvac Co.",
+        "estimated_cost_per_transfer_usd": "$90 - $180",
+        "contact_info": "+66 2 123 4567",
+        "notes": "Includes ICU mode support, suitable for severely ill patients",
+        "country": "Thailand",
+        "city": "Bangkok",
+        "accessibility_features": [
+          "Stretcher accessible",
+          "Oxygen support onboard",
+          "Patient hoist available",
+          "Medical staff escort optional"
+        ]
+      },
+      {
+        "id": "th-bk-02",
+        "service_name": "Bumrungrad Medical Shuttle",
+        "type": "Hospital Shuttle",
+        "provider": "Bumrungrad International Hospital",
+        "estimated_cost_per_transfer_usd": "Free - $20",
+        "contact_info": "https://www.bumrungrad.com",
+        "notes": "Free shuttle service requires advance booking through the hospital appointment system",
+        "country": "Thailand",
+        "city": "Bangkok",
+        "accessibility_features": [
+          "Wheelchair ramp",
+          "Hospital staff assistance",
+          "Comfort seating"
+        ]
+      },
+      {
+        "id": "th-bk-03",
+        "service_name": "ThaiHealth Private Transport",
+        "type": "Medical Transport Van",
+        "provider": "ThaiHealth Mobility",
+        "estimated_cost_per_transfer_usd": "$30 - $70",
+        "contact_info": "+66 81 234 5678",
+        "notes": "Supports intercity transfer services, provides basic medical facilities",
+        "country": "Thailand",
+        "city": "Bangkok",
+        "accessibility_features": [
+          "Hydraulic lift",
+          "Wheelchair ramp",
+          "Medical escort optional"
+        ]
+      }
+    ]
+  }
+]

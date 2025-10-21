@@ -1,0 +1,9 @@
+taskflowai
+python-dotenv
+langchain-google-genai
+google-generativeai
+from_root
+uvicorn       
+fastapi
+pydantic
+# -e .

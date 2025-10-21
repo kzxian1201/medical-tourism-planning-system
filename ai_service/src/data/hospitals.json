@@ -1,0 +1,945 @@
+[
+    {
+        "id": "hospital_MY_001",
+        "name": "Prince Court Medical Centre",
+        "address": "39 Jalan Kia Peng, 50450 Kuala Lumpur, Malaysia",
+        "city": "Kuala Lumpur",
+        "country": "Malaysia",
+        "geo_location": {
+            "latitude": 3.1502,
+            "longitude": 101.7164
+        },
+        "contact": {
+            "website": "https://princecourt.com/",
+            "phone": "+603-2160 0000",
+            "email": "info@princecourt.com"
+        },
+        "description_overview": "A premium hospital known for international patient services, advanced technology, and high-end private healthcare.",
+        "medical_professionalism": {
+            "hospital_type": "Specialist Hospital",
+            "certifications": ["JCI", "MOH Malaysia", "ISO 9001"],
+            "key_specializations": ["Orthopedic Surgery", "Cardiology", "Fertility Treatment", "Oncology", "Health Check-ups"],
+            "renowned_doctor_teams_overview": "Internationally trained cardiac surgeons, fertility experts, orthopedic specialists.",
+            "advanced_technology_overview": ["Da Vinci Robotic Surgery", "3.0T MRI", "PET/CT", "Fully Digital Operating Theatres"]
+        },
+        "international_patient_services": {
+            "has_international_patient_center": true,
+            "languages_supported": ["English", "Mandarin", "Malay", "Arabic", "Japanese"],
+            "cultural_accommodations": ["Halal food", "Prayer rooms", "Mandarin-speaking coordinators"],
+            "offers_medical_tourism_packages": true,
+            "package_details": "Check-ups, fertility, orthopedic surgery with airport transfer and accommodation."
+        },
+        "geographical_convenience": {
+            "distance_to_airport_km": 60,
+            "distance_to_airport_text": "Approximately 45-60 minutes to KLIA",
+            "transport_accessibility": "Central KL location with public transport and highway access.",
+            "nearby_tourist_attractions": ["Petronas Twin Towers", "KLCC Park", "Pavilion Mall"],
+            "nearby_amenities": ["Luxury Hotels", "Malls", "Restaurants"]
+        },
+        "brand_reputation": {
+            "average_rating": 4.7,
+            "review_count": 3200,
+            "review_summary_overview": "Praised for world-class facilities, efficient service, and medical excellence.",
+            "listed_on_platforms": ["MyMediTravel", "PlacidWay", "Bookimed"],
+            "online_presence_score": "High"
+        },
+        "cost_and_value": {
+            "hospital_price_tier": "Premium",
+            "service_cost_overview": "High-end pricing with premium care and international standards.",
+            "main_currency_accepted": "MYR",
+            "accepts_multiple_currencies": true,
+            "payment_options": ["Credit Card", "Bank Transfer"],
+            "cost_transparency_score": "High"
+        },
+        "treatments_offered": [
+            {
+                "treatment_id": "treatment_003", 
+                "cost": {
+                    "myr": {
+                        "min": 80000,
+                        "max": 120000,
+                        "currency": "MYR"
+                    },
+                    "usd": {
+                        "min": 17000,
+                        "max": 25000,
+                        "currency": "USD"
+                    },
+                    "unit": "per procedure" 
+                },
+                "notes": "Coronary artery bypass including hospitalization and follow-up care."
+            },
+            {
+                "treatment_id": "treatment_002",
+                "cost": {
+                    "myr": {
+                        "min": 40000,
+                        "max": 70000,
+                        "currency": "MYR"
+                    },
+                    "usd": {
+                        "min": 8500,
+                        "max": 15000,
+                        "currency": "USD"
+                    },
+                    "unit": "per knee" 
+                },
+                "notes": "Knee replacement package includes prosthesis and physiotherapy."
+            },
+            {
+                "treatment_id": "treatment_004",
+                "cost": {
+                    "myr": {
+                        "min": 20000,
+                        "max": 35000,
+                        "currency": "MYR"
+                    },
+                    "usd": {
+                        "min": 4500,
+                        "max": 7500,
+                        "currency": "USD"
+                    },
+                    "unit": "per cycle" 
+                },
+                "notes": "IVF basic package excluding medications."
+            },
+            {
+                "treatment_id": "treatment_008",
+                "cost": {
+                    "myr": {
+                        "min": 2500,
+                        "max": 4500,
+                        "currency": "MYR"
+                    },
+                    "usd": {
+                        "min": 550,
+                        "max": 950,
+                        "currency": "USD"
+                    },
+                    "unit": "per person" 
+                },
+                "notes": "Comprehensive health screening package."
+            }
+        ],
+        "famous_doctors": ["doctor_jason_lim", "doctor_amelia_tan"],
+        "equipment_list": ["Da Vinci Robotic Surgery System", "3.0T MRI", "PET/CT Scanner", "Fully Digital Operating Suites"],
+        "tourism_packages": [
+            "Premium Health Screening + 5-star hotel stay",
+            "IVF Package + accommodation",
+            "Orthopedic Surgery + transfers"
+        ],
+        "accessibility_features": [
+            "Wheelchair accessible entrances and exits",
+            "Accessible restrooms on all floors",
+            "Elevators with Braille and auditory cues",
+            "Designated accessible parking",
+            "Tactile paving for visually impaired"
+        ]
+    },
+    {
+        "id": "hospital_MY_002",
+        "name": "Sunway Medical Centre",
+        "address": "5, Jalan Lagoon Selatan, Bandar Sunway, 47500 Selangor, Malaysia",
+        "city": "Bandar Sunway",
+        "country": "Malaysia",
+        "geo_location": {
+            "latitude": 3.0687,
+            "longitude": 101.6077
+        },
+        "contact": {
+            "website": "https://www.sunwaymedical.com/",
+            "phone": "+603-7491 9191",
+            "email": "enquiry@sunwaymedical.com"
+        },
+        "description_overview": "Leading private hospital affiliated with Sunway University, renowned for advanced medical technology and comprehensive specialist care.",
+        "medical_professionalism": {
+            "hospital_type": "General Hospital",
+            "certifications": ["JCI", "MOH Malaysia", "ISO 9001"],
+            "key_specializations": ["Oncology", "Neurosurgery", "Orthopedic Surgery", "Fertility Treatment", "Cardiology"],
+            "renowned_doctor_teams_overview": "Multidisciplinary teams with global training in oncology, robotic surgery, and reproductive medicine.",
+            "advanced_technology_overview": ["PET/CT", "CyberKnife", "3.0T MRI", "Robotic Surgery Suites"]
+        },
+        "international_patient_services": {
+            "has_international_patient_center": true,
+            "languages_supported": ["English", "Mandarin", "Malay", "Arabic"],
+            "cultural_accommodations": ["Halal dining", "Prayer rooms", "Mandarin-speaking patient coordinators"],
+            "offers_medical_tourism_packages": true,
+            "package_details": "Comprehensive cancer care, health screenings, and fertility packages with accommodation options."
+        },
+        "geographical_convenience": {
+            "distance_to_airport_km": 50,
+            "distance_to_airport_text": "Approximately 40-50 minutes to KLIA",
+            "transport_accessibility": "Well-connected via highways, close to BRT station.",
+            "nearby_tourist_attractions": ["Sunway Lagoon", "Sunway Pyramid Mall"],
+            "nearby_amenities": ["Hotels", "Restaurants", "Shops"]
+        },
+        "brand_reputation": {
+            "average_rating": 4.5,
+            "review_count": 2800,
+            "review_summary_overview": "Recognised for advanced facilities, patient-centric services, and international medical expertise.",
+            "listed_on_platforms": ["Bookimed", "PlacidWay", "MyMediTravel"],
+            "online_presence_score": "High"
+        },
+        "cost_and_value": {
+            "hospital_price_tier": "Premium",
+            "service_cost_overview": "Premium pricing aligned with advanced technology and international standards.",
+            "main_currency_accepted": "MYR",
+            "accepts_multiple_currencies": true,
+            "payment_options": ["Credit Card", "Bank Transfer"],
+            "cost_transparency_score": "High"
+        },
+        "treatments_offered": [
+            {
+                "treatment_id": "treatment_005",
+                "cost": {
+                    "myr": {
+                        "min": 25000,
+                        "max": 45000,
+                        "currency": "MYR"
+                    },
+                    "usd": {
+                        "min": 5500,
+                        "max": 9500,
+                        "currency": "USD"
+                    },
+                    "unit": "per session" 
+                },
+                "notes": "CyberKnife precision radiotherapy package."
+            },
+            {
+                "treatment_id": "treatment_008",
+                "cost": {
+                    "myr": {
+                        "min": 2500,
+                        "max": 4500,
+                        "currency": "MYR"
+                    },
+                    "usd": {
+                        "min": 550,
+                        "max": 950,
+                        "currency": "USD"
+                    },
+                    "unit": "per person" 
+                },
+                "notes": "Comprehensive health screening with doctor consultation."
+            }
+        ],
+        "famous_doctors": ["doctor_michelle_wong", "doctor_andrew_lee"],
+        "equipment_list": ["PET/CT Scanner", "CyberKnife System", "3.0T MRI", "Robotic Surgery Unit"],
+        "tourism_packages": ["Cancer treatment + accommodation", "Health screening + hotel package"],
+        "accessibility_features": [
+            "Wheelchair accessible entrances",
+            "Ramps and elevators",
+            "Handrails in corridors",
+            "Accessible parking bays",
+            "Support staff available for assistance"
+        ]
+    },
+    {
+        "id": "hospital_MY_003",
+        "name": "Island Hospital Penang",
+        "address": "308 Macalister Rd, 10450 Penang, Malaysia",
+        "city": "George Town",
+        "country": "Malaysia",
+        "geo_location": {
+            "latitude": 5.4203,
+            "longitude": 100.3255
+        },
+        "contact": {
+            "website": "https://www.islandhospital.com/",
+            "phone": "+604-228 8000",
+            "email": "info@islandhospital.com"
+        },
+        "description_overview": "A JCI-accredited tertiary hospital in Penang offering a comprehensive range of specialist services within a UNESCO heritage city.",
+        "medical_professionalism": {
+            "hospital_type": "General Hospital",
+            "certifications": ["JCI", "MSQH"],
+            "key_specializations": ["Orthopedics", "Cardiology", "Oncology", "Neurosurgery", "Fertility Treatment"],
+            "renowned_doctor_teams_overview": "Specialist teams in joint replacement, cardiac care, oncology and fertility with international training.",
+            "advanced_technology_overview": ["PET/CT", "3.0T MRI", "Robotic Surgical Suites", "Advanced Cardiac Cath Labs"]
+        },
+        "international_patient_services": {
+            "has_international_patient_center": true,
+            "languages_supported": ["English", "Mandarin", "Malay", "Arabic", "Hindi"],
+            "cultural_accommodations": ["Halal food", "Prayer spaces", "Mandarin-speaking coordinators"],
+            "offers_medical_tourism_packages": true,
+            "package_details": "Orthopedic surgery, fertility treatment, and health screening packages with airport transfers and accommodation."
+        },
+        "geographical_convenience": {
+            "distance_to_airport_km": 20,
+            "distance_to_airport_text": "Approximately 30 minutes to Penang International Airport",
+            "transport_accessibility": "Accessible via major roads, taxis, and ride-hailing services.",
+            "nearby_tourist_attractions": ["George Town UNESCO Heritage Zone", "Penang Hill", "Chew Jetty"],
+            "nearby_amenities": ["Hotels", "Heritage Cafes", "Shopping Areas"]
+        },
+        "brand_reputation": {
+            "average_rating": 4.6,
+            "review_count": 2400,
+            "review_summary_overview": "Praised for international accreditation, holistic care, and modern medical infrastructure.",
+            "listed_on_platforms": ["PlacidWay", "MyMediTravel", "Bookimed"],
+            "online_presence_score": "High"
+        },
+        "cost_and_value": {
+            "hospital_price_tier": "Premium",
+            "service_cost_overview": "Competitive premium pricing for the Penang region with international care standards.",
+            "main_currency_accepted": "MYR",
+            "accepts_multiple_currencies": true,
+            "payment_options": ["Credit Card", "Bank Transfer"],
+            "cost_transparency_score": "High"
+        },
+        "treatments_offered": [
+            {
+                "treatment_id": "treatment_002",
+                "cost": {
+                    "myr": {
+                        "min": 30000,
+                        "max": 55000,
+                        "currency": "MYR"
+                    },
+                    "usd": {
+                        "min": 6500,
+                        "max": 12000,
+                        "currency": "USD"
+                    },
+                    "unit": "per knee" 
+                },
+                "notes": "Knee replacement including hospitalization and initial physiotherapy."
+            },
+            {
+                "treatment_id": "treatment_004",
+                "cost": {
+                    "myr": {
+                        "min": 15000,
+                        "max": 28000,
+                        "currency": "MYR"
+                    },
+                    "usd": {
+                        "min": 3300,
+                        "max": 6000,
+                        "currency": "USD"
+                    },
+                    "unit": "per cycle" 
+                },
+                "notes": "IVF treatment excluding medication costs."
+            }
+        ],
+        "famous_doctors": ["doctor_rajiv_kumar", "doctor_cheong_mei_ling"],
+        "equipment_list": ["3.0T MRI", "PET/CT Scanner", "Robotic Surgical System", "Advanced Cardiac Cath Lab"],
+        "tourism_packages": ["Orthopedic Surgery + Penang Heritage Tour", "Fertility Treatment + Cultural Experience Package"],
+        "accessibility_features": [
+            "Accessible entrances with ramps",
+            "Wide corridors for wheelchairs",
+            "Accessible patient rooms and bathrooms",
+            "Elevators with sufficient space",
+            "Visual and auditory alarms"
+        ]
+    },
+    {
+        "id": "hospital_MY_004",
+        "name": "Institut Jantung Negara (IJN)",
+        "address": "145 Jalan Tun Razak, 50400 Kuala Lumpur, Malaysia",
+        "city": "Kuala Lumpur",
+        "country": "Malaysia",
+        "geo_location": {
+            "latitude": 3.1478,
+            "longitude": 101.7122
+        },
+        "contact": {
+            "website": "https://www.ijn.com.my/",
+            "phone": "+603-2168 0000",
+            "email": "info@ijn.com.my"
+        },
+        "description_overview": "Malaysia's National Heart Institute, a globally recognized cardiac center specializing in heart and vascular care with advanced treatment technologies.",
+        "medical_professionalism": {
+            "hospital_type": "Cardiac Specialist Hospital",
+            "certifications": ["MOH Malaysia", "MSQH"],
+            "key_specializations": ["Cardiac Surgery", "Interventional Cardiology", "Heart Failure Management"],
+            "renowned_doctor_teams_overview": "Globally trained cardiac surgeons and interventional cardiologists offering cutting-edge procedures.",
+            "advanced_technology_overview": ["Hybrid Operating Theatres", "Advanced Cath Labs", "ECMO", "3.0T MRI"]
+        },
+        "international_patient_services": {
+            "has_international_patient_center": true,
+            "languages_supported": ["English", "Mandarin", "Malay", "Indonesian"],
+            "cultural_accommodations": ["Halal food", "Prayer rooms", "Family coordinators"],
+            "offers_medical_tourism_packages": false,
+            "package_details": "Dedicated cardiac care with concierge services; accommodation and transfers coordinated separately upon request."
+        },
+        "geographical_convenience": {
+            "distance_to_airport_km": 55,
+            "distance_to_airport_text": "Approximately 45-60 minutes to KLIA",
+            "transport_accessibility": "Well connected by major highways with easy access to taxis and ride-hailing services.",
+            "nearby_tourist_attractions": ["KL Bird Park", "Bukit Bintang Shopping District"],
+            "nearby_amenities": ["Hotels", "Restaurants", "Shops"]
+        },
+        "brand_reputation": {
+            "average_rating": 4.8,
+            "review_count": 3000,
+            "review_summary_overview": "Renowned globally for cardiac care excellence, advanced medical technologies, and experienced specialists.",
+            "listed_on_platforms": ["Bookimed", "PlacidWay"],
+            "online_presence_score": "High"
+        },
+        "cost_and_value": {
+            "hospital_price_tier": "Premium",
+            "service_cost_overview": "Specialized cardiac care with transparent pricing for international patients.",
+            "main_currency_accepted": "MYR",
+            "accepts_multiple_currencies": true,
+            "payment_options": ["Credit Card", "Insurance Billing"],
+            "cost_transparency_score": "Medium"
+        },
+        "treatments_offered": [
+            {
+                "treatment_id": "treatment_003", 
+                "cost": {
+                    "myr": {
+                        "min": 70000,
+                        "max": 110000,
+                        "currency": "MYR"
+                    },
+                    "usd": {
+                        "min": 15000,
+                        "max": 24000,
+                        "currency": "USD"
+                    },
+                    "unit": "per procedure" 
+                },
+                "notes": "Coronary artery bypass surgery including ICU care and follow-up consultations."
+            }
+        ],
+        "famous_doctors": ["doctor_azlan_rahman"],
+        "equipment_list": ["Hybrid Cardiac Cath Lab", "ECMO Life Support Systems", "3.0T MRI Imaging"],
+        "tourism_packages": ["Cardiac Surgery Concierge Assistance + Accommodation Coordination"],
+        "accessibility_features": [
+            "Wheelchair ramps at all entry points",
+            "Accessible patient rooms and examination areas",
+            "Accessible parking spaces near entrance",
+            "Staff trained to assist patients with mobility challenges",
+            "Clear signage with large fonts"
+        ]
+    },
+    {
+        "id": "hospital_MY_005",
+        "name": "Gleneagles Kuala Lumpur",
+        "address": "286 Jalan Ampang, 50450 Kuala Lumpur, Malaysia",
+        "city": "Kuala Lumpur",
+        "country": "Malaysia",
+        "geo_location": {
+            "latitude": 3.1519,
+            "longitude": 101.7211
+        },
+        "contact": {
+            "website": "https://www.gleneagles.com.my/",
+            "phone": "+603-4265 2000",
+            "email": "kl@gleneagles.com.my"
+        },
+        "description_overview": "Part of the renowned Gleneagles international network, providing comprehensive multi-specialty treatments with five-star hospitality.",
+        "medical_professionalism": {
+            "hospital_type": "General Hospital",
+            "certifications": ["JCI", "MOH Malaysia", "ISO 9001"],
+            "key_specializations": ["Cardiology", "Oncology", "Orthopedic Surgery", "Neurosurgery", "Fertility Treatment"],
+            "renowned_doctor_teams_overview": "Internationally trained specialists in cardiology, cancer care, and complex orthopedic surgeries.",
+            "advanced_technology_overview": ["PET/CT", "Robotic Surgery Systems", "Advanced Cath Labs", "Specialized Oncology Units"]
+        },
+        "international_patient_services": {
+            "has_international_patient_center": true,
+            "languages_supported": ["English", "Mandarin", "Malay", "Arabic"],
+            "cultural_accommodations": ["Halal food", "Prayer rooms", "Mandarin-speaking coordinators"],
+            "offers_medical_tourism_packages": true,
+            "package_details": "Multi-specialty treatment packages with luxury accommodation and airport transfer."
+        },
+        "geographical_convenience": {
+            "distance_to_airport_km": 60,
+            "distance_to_airport_text": "Approximately 45-60 minutes to KLIA",
+            "transport_accessibility": "Centrally located with excellent access to public transport and major highways.",
+            "nearby_tourist_attractions": ["Petronas Twin Towers", "Bukit Bintang Shopping District"],
+            "nearby_amenities": ["5-star Hotels", "Shopping Malls", "Restaurants"]
+        },
+        "brand_reputation": {
+            "average_rating": 4.6,
+            "review_count": 2900,
+            "review_summary_overview": "Highly regarded for premium patient experience, world-class facilities, and international care standards.",
+            "listed_on_platforms": ["Bookimed", "MyMediTravel", "PlacidWay"],
+            "online_presence_score": "High"
+        },
+        "cost_and_value": {
+            "hospital_price_tier": "Premium",
+            "service_cost_overview": "Premium pricing aligned with the Gleneagles global healthcare brand.",
+            "main_currency_accepted": "MYR",
+            "accepts_multiple_currencies": true,
+            "payment_options": ["Credit Card", "Insurance Billing"],
+            "cost_transparency_score": "High"
+        },
+        "treatments_offered": [
+            {
+                "treatment_id": "treatment_002",
+                "cost": {
+                    "myr": {
+                        "min": 38000,
+                        "max": 65000,
+                        "currency": "MYR"
+                    },
+                    "usd": {
+                        "min": 8000,
+                        "max": 14000,
+                        "currency": "USD"
+                    },
+                    "unit": "per knee" 
+                },
+                "notes": "Joint replacement package including implant and hospital stay."
+            },
+            {
+                "treatment_id": "treatment_004",
+                "cost": {
+                    "myr": {
+                        "min": 22000,
+                        "max": 37000,
+                        "currency": "MYR"
+                    },
+                    "usd": {
+                        "min": 4700,
+                        "max": 8000,
+                        "currency": "USD"
+                    },
+                    "unit": "per cycle" 
+                },
+                "notes": "IVF package excluding medications."
+            }
+        ],
+        "famous_doctors": ["doctor_sarah_lee"],
+        "equipment_list": ["Robotic Surgery Systems", "PET/CT Scanner", "3.0T MRI", "Advanced Cardiac Cath Lab"],
+        "tourism_packages": ["Oncology Treatment + Luxury Accommodation", "Fertility Treatment + KL City Tour"],
+        "accessibility_features": [
+            "Step-free access to main entrances",
+            "Accessible elevators to all patient areas",
+            "Wheelchair-friendly waiting areas and consultation rooms",
+            "Accessible parking and drop-off points",
+            "Staff assistance for mobility support"
+        ]
+    },
+    {
+        "id": "hospital_MY_006",
+        "name": "Alpha Fertility Centre (AFC)",
+        "address": "Lot G-01 & 1, Third Avenue, Desa ParkCity, 52200 Kuala Lumpur, Malaysia",
+        "city": "Kuala Lumpur",
+        "country": "Malaysia",
+        "geo_location": {
+            "latitude": 3.1887,
+            "longitude": 101.6214
+        },
+        "contact": {
+            "website": "https://alphafertilitycentre.com/",
+            "phone": "+603-6203 3535",
+            "email": "info@alphafertilitycentre.com"
+        },
+        "description_overview": "A leading IVF and fertility specialist centre with advanced reproductive technologies and strong international patient focus.",
+        "medical_professionalism": {
+            "hospital_type": "Specialist IVF Centre",
+            "certifications": ["ISO 9001", "MSQH"],
+            "key_specializations": ["Fertility Treatment", "IVF", "IUI", "Male Infertility Solutions"],
+            "renowned_doctor_teams_overview": "Internationally trained fertility specialists with high IVF success rates.",
+            "advanced_technology_overview": ["Advanced Embryology Labs", "Time-lapse Embryo Monitoring", "Pre-implantation Genetic Testing"]
+        },
+        "international_patient_services": {
+            "has_international_patient_center": true,
+            "languages_supported": ["English", "Mandarin", "Malay", "Arabic"],
+            "cultural_accommodations": ["Halal food", "Prayer rooms", "Mandarin-speaking coordinators"],
+            "offers_medical_tourism_packages": true,
+            "package_details": "Comprehensive IVF and fertility packages including hotel accommodation and round-trip airport transfers."
+        },
+        "geographical_convenience": {
+            "distance_to_airport_km": 65,
+            "distance_to_airport_text": "Approximately 50-70 minutes to KLIA",
+            "transport_accessibility": "Convenient access via major highways with ride-hailing services readily available.",
+            "nearby_tourist_attractions": ["Desa ParkCity Park", "Central Park", "Local Cafes and Restaurants"],
+            "nearby_amenities": ["Hotels", "Shopping Outlets", "Dining"]
+        },
+        "brand_reputation": {
+            "average_rating": 4.8,
+            "review_count": 1800,
+            "review_summary_overview": "Highly rated for excellent IVF success rates, personalized patient care, and international services.",
+            "listed_on_platforms": ["MyMediTravel", "Bookimed"],
+            "online_presence_score": "High"
+        },
+        "cost_and_value": {
+            "hospital_price_tier": "Premium",
+            "service_cost_overview": "Competitive fertility pricing with advanced technology and high success outcomes.",
+            "main_currency_accepted": "MYR",
+            "accepts_multiple_currencies": true,
+            "payment_options": ["Credit Card", "Bank Transfer"],
+            "cost_transparency_score": "High"
+        },
+        "treatments_offered": [
+            {
+                "treatment_id": "treatment_004",
+                "cost": {
+                    "myr": {
+                        "min": 18000,
+                        "max": 35000,
+                        "currency": "MYR"
+                    },
+                    "usd": {
+                        "min": 4000,
+                        "max": 8000,
+                        "currency": "USD"
+                    },
+                    "unit": "per cycle"
+                },
+                "notes": "IVF package excluding medication; includes lab services and embryo transfer."
+            }
+        ],
+        "famous_doctors": ["doctor_siti_aishah"],
+        "equipment_list": ["Advanced IVF Laboratory", "Time-lapse Embryo Monitoring System", "Genetic Screening Technology"],
+        "tourism_packages": ["IVF Treatment + Kuala Lumpur City Stay + Airport Transfers"],
+        "accessibility_features": [
+            "Wheelchair accessible entrances",
+            "Accessible consultation rooms",
+            "Accessible restrooms",
+            "Elevator access to all floors"
+        ]
+    },
+    {
+        "id": "hospital_MY_007",
+        "name": "Mahkota Medical Centre",
+        "address": "Jalan Merdeka, 75000 Melaka, Malaysia",
+        "city": "Melaka",
+        "country": "Malaysia",
+        "geo_location": {
+            "latitude": 2.1896,
+            "longitude": 102.2501
+        },
+        "contact": {
+            "website": "https://www.mahkotamedical.com/",
+            "phone": "+606-285 3333",
+            "email": "info@mahkotamedical.com"
+        },
+        "description_overview": "A leading private hospital in Melaka providing comprehensive specialist care, known for convenience and medical tourist accessibility.",
+        "medical_professionalism": {
+            "hospital_type": "General Hospital",
+            "certifications": ["JCI", "MSQH"],
+            "key_specializations": ["Orthopedics", "Oncology", "Cardiology", "Health Check-ups"],
+            "renowned_doctor_teams_overview": "Experienced specialists in orthopedic surgery, cardiac care, and oncology treatments.",
+            "advanced_technology_overview": ["MRI", "Advanced Imaging Systems", "Digital Operating Theatres"]
+        },
+        "international_patient_services": {
+            "has_international_patient_center": true,
+            "languages_supported": ["English", "Malay", "Mandarin"],
+            "cultural_accommodations": ["Halal food", "Prayer rooms"],
+            "offers_medical_tourism_packages": true,
+            "package_details": "Health check-up and orthopedic treatment packages with accommodation and transport arrangements."
+        },
+        "geographical_convenience": {
+            "distance_to_airport_km": 20,
+            "distance_to_airport_text": "Approximately 25 minutes to Melaka International Airport",
+            "transport_accessibility": "Easily accessible via expressways with local taxis and ride-hailing services.",
+            "nearby_tourist_attractions": ["Jonker Street", "Malacca River Cruise", "Dutch Square"],
+            "nearby_amenities": ["Hotels", "Local Eateries", "Tourist Shops"]
+        },
+        "brand_reputation": {
+            "average_rating": 4.4,
+            "review_count": 1500,
+            "review_summary_overview": "Well-reviewed for affordable specialist services, accessibility, and efficient patient care.",
+            "listed_on_platforms": ["PlacidWay", "MyMediTravel"],
+            "online_presence_score": "Medium"
+        },
+        "cost_and_value": {
+            "hospital_price_tier": "Mid-range",
+            "service_cost_overview": "Affordable specialist treatments with good value for money.",
+            "main_currency_accepted": "MYR",
+            "accepts_multiple_currencies": false,
+            "payment_options": ["Credit Card", "Bank Transfer"],
+            "cost_transparency_score": "Medium"
+        },
+        "treatments_offered": [
+            {
+                "treatment_id": "treatment_002",
+                "cost": {
+                    "myr": {
+                        "min": 30000,
+                        "max": 55000,
+                        "currency": "MYR"
+                    },
+                    "usd": {
+                        "min": 6500,
+                        "max": 12000,
+                        "currency": "USD"
+                    },
+                    "unit": "per procedure"
+                },
+                "notes": "Standard knee replacement package including hospitalization."
+            }
+        ],
+        "famous_doctors": ["doctor_ahmad_rizal"],
+        "equipment_list": ["MRI Scanner", "Digital Operating Theatres", "Advanced Imaging Equipment"],
+        "tourism_packages": ["Health Screening + Melaka Heritage Tour"],
+        "accessibility_features": [
+            "Ramps at all entrances",
+            "Wheelchair accessible patient rooms",
+            "Accessible parking",
+            "Elevators available",
+            "Staff assistance upon request"
+        ]
+    },
+    {
+        "id": "hospital_MY_008",
+        "name": "KPJ Johor Specialist Hospital",
+        "address": "No. 1, Jalan Abdul Samad, 80000 Johor Bahru, Johor, Malaysia",
+        "city": "Johor Bahru",
+        "country": "Malaysia",
+        "geo_location": {
+            "latitude": 1.4857,
+            "longitude": 103.761
+        },
+        "contact": {
+            "website": "https://www.kpjhealth.com.my/johor",
+            "phone": "+607-334 8800",
+            "email": "enquiry.johor@kpjhealth.com.my"
+        },
+        "description_overview": "A trusted specialist hospital in Johor Bahru providing multi-disciplinary care with convenient cross-border access from Singapore.",
+        "medical_professionalism": {
+            "hospital_type": "Specialist Hospital",
+            "certifications": ["MSQH"],
+            "key_specializations": ["Cardiology", "Oncology", "Orthopedic Surgery"],
+            "renowned_doctor_teams_overview": "Experienced surgical teams in cardiac and joint procedures with regional expertise.",
+            "advanced_technology_overview": ["MRI", "Digital Imaging", "Advanced Diagnostic Suites"]
+        },
+        "international_patient_services": {
+            "has_international_patient_center": true,
+            "languages_supported": ["English", "Malay", "Mandarin"],
+            "cultural_accommodations": ["Halal Food Options"],
+            "offers_medical_tourism_packages": true,
+            "package_details": "Comprehensive packages with cross-border transport to/from Singapore included."
+        },
+        "geographical_convenience": {
+            "distance_to_airport_km": 35,
+            "distance_to_airport_text": "Approximately 30 minutes to Senai International Airport",
+            "transport_accessibility": "Close to Johor-Singapore Causeway, with local taxis and ride-hailing services available.",
+            "nearby_tourist_attractions": ["Johor Bahru City Centre", "Legoland Malaysia"],
+            "nearby_amenities": ["Hotels", "Shopping Malls", "Restaurants"]
+        },
+        "brand_reputation": {
+            "average_rating": 4.3,
+            "review_count": 1200,
+            "review_summary_overview": "Recognized for dependable patient care and regional medical expertise.",
+            "listed_on_platforms": ["MyMediTravel", "PlacidWay"],
+            "online_presence_score": "Medium"
+        },
+        "cost_and_value": {
+            "hospital_price_tier": "Mid-range",
+            "service_cost_overview": "Competitive pricing for specialist care with focus on value.",
+            "main_currency_accepted": "MYR",
+            "accepts_multiple_currencies": true,
+            "payment_options": ["Credit Card", "Bank Transfer"],
+            "cost_transparency_score": "Medium"
+        },
+        "treatments_offered": [
+            {
+                "treatment_id": "treatment_003",
+                "cost": {
+                    "myr": {
+                        "min": 25000,
+                        "max": 45000,
+                        "currency": "MYR"
+                    },
+                    "usd": {
+                        "min": 5500,
+                        "max": 9500,
+                        "currency": "USD"
+                    },
+                    "unit": "per procedure"
+                },
+                "notes": "Heart bypass surgery package includes basic care and hospitalization."
+            }
+        ],
+        "famous_doctors": ["doctor_lee_wei_chong"],
+        "equipment_list": ["MRI Scanner", "Digital Imaging Suite"],
+        "tourism_packages": ["Cardiac Care + Johor Bahru & Singapore Sightseeing Package"],
+        "accessibility_features": [
+            "Wheelchair accessible entrances and exits",
+            "Accessible parking",
+            "Ramps for easy navigation",
+            "Accessible patient rooms",
+            "Trained staff for assistance"
+        ]
+    },
+    {
+        "id": "hospital_MY_009",
+        "name": "Thomson Hospital Kota Damansara",
+        "address": "Mutiara Damansara Business Centre, Jalan PJU 7/13, 47810 Petaling Jaya, Selangor, Malaysia",
+        "city": "Petaling Jaya",
+        "country": "Malaysia",
+        "geo_location": {
+            "latitude": 3.1712,
+            "longitude": 101.6187
+        },
+        "contact": {
+            "website": "https://www.thomsonhospital.com/",
+            "phone": "+603-7732 7777",
+            "email": "info@thomsonhospital.com"
+        },
+        "description_overview": "A modern private hospital known for exceptional patient care, advanced technology, and dedicated medical tourism services.",
+        "medical_professionalism": {
+            "hospital_type": "General Hospital",
+            "certifications": ["JCI", "MSQH"],
+            "key_specializations": ["Oncology", "Fertility Treatment", "Orthopedic Surgery"],
+            "renowned_doctor_teams_overview": "Expert teams in cancer care, reproductive medicine, and orthopedic surgery with international training.",
+            "advanced_technology_overview": ["PET/CT", "MRI Scanners", "Minimally Invasive Surgical Suites"]
+        },
+        "international_patient_services": {
+            "has_international_patient_center": true,
+            "languages_supported": ["English", "Malay", "Mandarin", "Arabic"],
+            "cultural_accommodations": ["Halal Food Options", "Prayer Rooms", "Mandarin-speaking Coordinators"],
+            "offers_medical_tourism_packages": true,
+            "package_details": "Comprehensive cancer and fertility treatment packages including transport and accommodation."
+        },
+        "geographical_convenience": {
+            "distance_to_airport_km": 45,
+            "distance_to_airport_text": "Approximately 45-60 minutes to Kuala Lumpur International Airport",
+            "transport_accessibility": "Easily accessible via MRT station and major expressways.",
+            "nearby_tourist_attractions": ["The Curve Mall", "IKEA Damansara", "KidZania Theme Park"],
+            "nearby_amenities": ["Hotels", "Shopping Centres", "Restaurants"]
+        },
+        "brand_reputation": {
+            "average_rating": 4.6,
+            "review_count": 2100,
+            "review_summary_overview": "Highly rated for patient-focused care, modern infrastructure, and international medical standards.",
+            "listed_on_platforms": ["MyMediTravel", "Bookimed"],
+            "online_presence_score": "High"
+        },
+        "cost_and_value": {
+            "hospital_price_tier": "Premium",
+            "service_cost_overview": "Premium healthcare pricing with world-class medical facilities.",
+            "main_currency_accepted": "MYR",
+            "accepts_multiple_currencies": true,
+            "payment_options": ["Credit Card", "Bank Transfer"],
+            "cost_transparency_score": "High"
+        },
+        "treatments_offered": [
+            {
+                "treatment_id": "treatment_004",
+                "cost": {
+                    "myr": {
+                        "min": 22000,
+                        "max": 38000,
+                        "currency": "MYR"
+                    },
+                    "usd": {
+                        "min": 5000,
+                        "max": 8500,
+                        "currency": "USD"
+                    },
+                    "unit": "per cycle"
+                },
+                "notes": "IVF package cost excludes medications, includes lab services and embryo transfer."
+            }
+        ],
+        "famous_doctors": ["doctor_farah_syed"],
+        "equipment_list": ["PET/CT Scanner", "3.0 Tesla MRI", "Minimally Invasive Surgical Suites"],
+        "tourism_packages": ["Cancer Treatment + Damansara Area Attractions Package"],
+        "accessibility_features": [
+            "Ramps and elevators for easy access",
+            "Accessible parking available",
+            "Wide doorways for wheelchair users",
+            "Accessible patient rooms and bathrooms",
+            "Assistance from staff for mobility"
+        ]
+    },
+    {
+        "id": "hospital_MY_010",
+        "name": "Subang Jaya Medical Centre",
+        "address": "1, Jalan SS 12/1A, 47500 Subang Jaya, Selangor, Malaysia",
+        "city": "Subang Jaya",
+        "country": "Malaysia",
+        "geo_location": {
+            "latitude": 3.0738,
+            "longitude": 101.5874
+        },
+        "contact": {
+            "website": "https://subangjayamedicalcentre.com/",
+            "phone": "+603-5639 1212",
+            "email": "enquiry@subangjayamedicalcentre.com"
+        },
+        "description_overview": "An award-winning tertiary care hospital offering advanced medical technology, internationally accredited healthcare, and comprehensive medical tourism services.",
+        "medical_professionalism": {
+            "hospital_type": "Tertiary Specialist Hospital",
+            "certifications": ["JCI", "MSQH"],
+            "key_specializations": ["Cardiology", "Oncology", "Orthopedic Surgery", "Neurology", "Fertility Treatment"],
+            "renowned_doctor_teams_overview": "Globally trained experts in cardiology, oncology, and advanced surgical procedures.",
+            "advanced_technology_overview": ["Da Vinci Robotic Surgery", "3.0T MRI", "PET/CT", "Advanced Radiotherapy Equipment"]
+        },
+        "international_patient_services": {
+            "has_international_patient_center": true,
+            "languages_supported": ["English", "Malay", "Mandarin", "Arabic"],
+            "cultural_accommodations": ["Halal Food Options", "Prayer Rooms", "Mandarin-speaking Coordinators"],
+            "offers_medical_tourism_packages": true,
+            "package_details": "Comprehensive health screening, cancer care, and IVF treatment packages with hotel stay and transport."
+        },
+        "geographical_convenience": {
+            "distance_to_airport_km": 45,
+            "distance_to_airport_text": "Approximately 40-50 minutes to Kuala Lumpur International Airport",
+            "transport_accessibility": "Well-connected via expressways, LRT stations, and shuttle services.",
+            "nearby_tourist_attractions": ["Sunway Pyramid Mall", "Sunway Lagoon Theme Park", "KidZania"],
+            "nearby_amenities": ["Hotels", "Restaurants", "Shopping Centres"]
+        },
+        "brand_reputation": {
+            "average_rating": 4.5,
+            "review_count": 1800,
+            "review_summary_overview": "Highly regarded for advanced medical care, patient satisfaction, and international healthcare excellence.",
+            "listed_on_platforms": ["MyMediTravel", "Bookimed", "PlacidWay"],
+            "online_presence_score": "High"
+        },
+        "cost_and_value": {
+            "hospital_price_tier": "Premium",
+            "service_cost_overview": "Premium healthcare pricing aligned with advanced technologies and global standards.",
+            "main_currency_accepted": "MYR",
+            "accepts_multiple_currencies": true,
+            "payment_options": ["Credit Card", "International Bank Transfers"],
+            "cost_transparency_score": "High"
+        },
+        "treatments_offered": [
+            {
+                "treatment_id": "treatment_003",
+                "cost": {
+                    "myr": {
+                        "min": 25000,
+                        "max": 50000,
+                        "currency": "MYR"
+                    },
+                    "usd": {
+                        "min": 5500,
+                        "max": 11000,
+                        "currency": "USD"
+                    },
+                    "unit": "per procedure"
+                },
+                "notes": "Heart bypass surgery package includes hospitalization and post-operative care."
+            },
+            {
+                "treatment_id": "treatment_004",
+                "cost": {
+                    "myr": {
+                        "min": 18000,
+                        "max": 30000,
+                        "currency": "MYR"
+                    },
+                    "usd": {
+                        "min": 3800,
+                        "max": 6500,
+                        "currency": "USD"
+                    },
+                    "unit": "per cycle"
+                },
+                "notes": "IVF package cost varies based on patient-specific protocols."
+            }
+        ],
+        "famous_doctors": ["doctor_wong_teck_wee", "doctor_ganesh_ramalingam"],
+        "equipment_list": ["Da Vinci Robotic Surgery System", "3.0 Tesla MRI", "PET/CT Scanner", "Advanced Radiotherapy Facilities"],
+        "tourism_packages": ["Executive Health Screening + Hotel Stay", "IVF Treatment with Accommodation", "Cancer Care Packages with Transport & Stay"],
+        "accessibility_features": [
+            "Wheelchair accessible entrances and ramps",
+            "Accessible patient rooms and facilities",
+            "Elevators with ample space",
+            "Designated accessible parking",
+            "Visual fire alarms in common areas"
+        ]
+    }
+]
+

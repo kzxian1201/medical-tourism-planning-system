@@ -1,0 +1,458 @@
+{
+    "chinese_malaysia_medical": {
+        "visa_required": "Yes",
+        "visa_type": "Medical eVisa",
+        "stay_duration_notes": "Duration depends on treatment plan",
+        "required_documents": ["Valid passport", "Letter from Malaysian hospital", "Medical report", "Proof of funds"],
+        "processing_time_days": "3-5 business days",
+        "notes": "Simplified simulation; advised to confirm latest medical visa procedures with Malaysian embassy."
+    },
+    "chinese_malaysia_tourism": {
+        "visa_required": "No",
+        "visa_type": "Visa-Free",
+        "stay_duration_notes": "Up to 30 days",
+        "required_documents": ["Valid passport"],
+        "processing_time_days": "N/A",
+        "notes": "Chinese passport holders enjoy visa-free entry to Malaysia until Dec 31, 2026."
+    },
+    "chinese_singapore_medical": {
+        "visa_required": "Yes",
+        "visa_type": "Medical Visa",
+        "stay_duration_notes": "Duration depends on treatment plan",
+        "required_documents": ["Valid passport", "Hospital introduction letter", "Proof of funds"],
+        "processing_time_days": "7-14 business days",
+        "notes": "Singapore hospitals can assist with application; advised to contact hospital's international patient center in advance."
+    },
+    "chinese_singapore_tourism": {
+        "visa_required": "No",
+        "visa_type": "Visa-Free",
+        "stay_duration_notes": "Up to 30 days",
+        "required_documents": ["Valid passport", "Return/onward ticket", "Sufficient funds"],
+        "processing_time_days": "N/A",
+        "notes": "Chinese passport holders enjoy 30-day visa-free entry to Singapore for tourism."
+    },
+    "chinese_thailand_medical": {
+        "visa_required": "Yes",
+        "visa_type": "Tourist Visa (TR) for medical treatment",
+        "stay_duration_notes": "Up to 60 days",
+        "required_documents": ["Valid passport", "Medical appointment/invitation", "Proof of funds", "Return ticket"],
+        "processing_time_days": "Variable",
+        "notes": "Medical travelers to Thailand typically apply for a 60-day Tourist Visa for treatment."
+    },
+    "chinese_thailand_tourism": {
+        "visa_required": "No",
+        "visa_type": "Visa-Free",
+        "stay_duration_notes": "Up to 60 days",
+        "required_documents": ["Valid passport", "Return/onward ticket", "Sufficient funds"],
+        "processing_time_days": "N/A",
+        "notes": "Chinese passport holders enjoy 60-day visa-free entry to Thailand, permanently effective from March 2024."
+    },
+    "chinese_indonesia_medical": {
+        "visa_required": "Yes",
+        "visa_type": "eVisa / Visa on Arrival (medical tourism)",
+        "stay_duration_notes": "Up to 30 days",
+        "required_documents": ["Valid passport", "Medical appointment/invitation", "Proof of funds"],
+        "processing_time_days": "Immediate / same day",
+        "notes": "Chinese citizens can obtain an eVisa or Visa on Arrival for medical visits to Indonesia, valid for up to 30 days."
+    },
+    "chinese_indonesia_tourism": {
+        "visa_required": "Yes",
+        "visa_type": "eVisa / Visa on Arrival",
+        "stay_duration_notes": "Up to 30 days",
+        "required_documents": ["Valid passport", "Proof of funds", "Return/onward ticket"],
+        "processing_time_days": "Immediate",
+        "notes": "Chinese passport holders can apply for an Indonesian tourist eVisa or Visa on Arrival for 30 days."
+    },
+    "indian_malaysia_medical": {
+        "visa_required": "Yes",
+        "visa_type": "Medical eVisa",
+        "stay_duration_notes": "Duration depends on treatment plan",
+        "required_documents": ["Valid passport", "Hospital invitation letter", "Medical report", "Proof of funds"],
+        "processing_time_days": "3-5 business days",
+        "notes": "Indian passport holders can apply for a Malaysian medical eVisa."
+    },
+    "indian_malaysia_tourism": {
+        "visa_required": "No",
+        "visa_type": "Visa-Free",
+        "stay_duration_notes": "Up to 30 days",
+        "required_documents": ["Valid passport"],
+        "processing_time_days": "N/A",
+        "notes": "Indian passport holders enjoy visa-free tourism to Malaysia until Dec 31, 2026."
+    },
+    "indian_singapore_medical": {
+        "visa_required": "Yes",
+        "visa_type": "Medical Visa",
+        "stay_duration_notes": "Duration depends on treatment plan",
+        "required_documents": ["Valid passport", "Hospital letter", "Proof of funds"],
+        "processing_time_days": "7-14 business days",
+        "notes": "Similar application process to Chinese citizens."
+    },
+    "indian_singapore_tourism": {
+        "visa_required": "No",
+        "visa_type": "Visa-Free",
+        "stay_duration_notes": "Up to 30 days",
+        "required_documents": ["Valid passport", "Return ticket", "Funds"],
+        "processing_time_days": "N/A",
+        "notes": "Indian passport holders generally enjoy 30-day visa-free travel to Singapore."
+    },
+    "indian_thailand_medical": {
+        "visa_required": "Yes",
+        "visa_type": "Tourist Visa (TR) for medical",
+        "stay_duration_notes": "Up to 60 days",
+        "required_documents": ["Valid passport", "Medical appointment", "Proof of funds"],
+        "processing_time_days": "Variable",
+        "notes": "Also use Tourist Visa for medical visits."
+    },
+    "indian_thailand_tourism": {
+        "visa_required": "Yes",
+        "visa_type": "Tourist Visa",
+        "stay_duration_notes": "Up to 60 days",
+        "required_documents": ["Valid passport", "Return ticket", "Proof of funds"],
+        "processing_time_days": "5-10 business days",
+        "notes": "Indian passport holders require a visa for tourism to Thailand."
+    },
+    "indian_indonesia_medical": {
+        "visa_required": "Yes",
+        "visa_type": "eVisa / Visa on Arrival",
+        "stay_duration_notes": "Up to 30 days",
+        "required_documents": ["Valid passport", "Medical documents", "Proof of funds"],
+        "processing_time_days": "Immediate",
+        "notes": "Indian passport holders can apply for an Indonesian medical visa."
+    },
+    "indian_indonesia_tourism": {
+        "visa_required": "Yes",
+        "visa_type": "eVisa / Visa on Arrival",
+        "stay_duration_notes": "Up to 30 days",
+        "required_documents": ["Valid passport", "Proof of funds", "Return ticket"],
+        "processing_time_days": "Immediate",
+        "notes": "Indian citizens can obtain an Indonesian Visa on Arrival or eVisa for tourism."
+    },
+    "us_malaysia_medical": {
+        "visa_required": "Yes",
+        "visa_type": "Medical Visa / eVisa",
+        "stay_duration_notes": "As per treatment",
+        "required_documents": ["Valid passport", "Hospital invitation", "Medical report", "Funds"],
+        "processing_time_days": "7-14 business days",
+        "notes": "US citizens need to apply for a medical visa."
+    },
+    "us_malaysia_tourism": {
+        "visa_required": "No",
+        "visa_type": "Visa-Free",
+        "stay_duration_notes": "Up to 90 days",
+        "required_documents": ["Valid passport"],
+        "processing_time_days": "N/A",
+        "notes": "US citizens typically enjoy 90-day visa-free entry to Malaysia for tourism."
+    },
+    "us_singapore_medical": {
+        "visa_required": "No",
+        "visa_type": "Visa-Free",
+        "stay_duration_notes": "Up to 30 days (tourist assumed for medical)",
+        "required_documents": ["Valid passport", "Hospital letter", "Funds"],
+        "processing_time_days": "N/A",
+        "notes": "US citizens can enter Singapore visa-free; medical visits are typically handled under tourist entry."
+    },
+    "us_singapore_tourism": {
+        "visa_required": "No",
+        "visa_type": "Visa-Free",
+        "stay_duration_notes": "Up to 30 days",
+        "required_documents": ["Valid passport", "Return ticket", "Funds"],
+        "processing_time_days": "N/A",
+        "notes": "US citizens enjoy 30-day visa-free tourism to Singapore."
+    },
+    "us_thailand_medical": {
+        "visa_required": "Yes",
+        "visa_type": "Tourist Visa",
+        "stay_duration_notes": "Up to 60 days",
+        "required_documents": ["Passport", "Clinic appointment", "Funds", "Return ticket"],
+        "processing_time_days": "5-10 business days",
+        "notes": "US citizens typically use a Tourist Visa for medical purposes in Thailand."
+    },
+    "us_thailand_tourism": {
+        "visa_required": "No",
+        "visa_type": "Visa-Exemption",
+        "stay_duration_notes": "Up to 30 days (extendable)",
+        "required_documents": ["Passport", "Proof of funds", "Return ticket"],
+        "processing_time_days": "N/A",
+        "notes": "US citizens can enter Thailand visa-exempt for up to 30 days, extendable."
+    },
+    "us_indonesia_medical": {
+        "visa_required": "Yes",
+        "visa_type": "eVisa / Visa on Arrival",
+        "stay_duration_notes": "Up to 30 days",
+        "required_documents": ["Passport", "Medical invitation", "Funds"],
+        "processing_time_days": "Immediate",
+        "notes": "US citizens can apply for an Indonesian medical eVisa or Visa on Arrival."
+    },
+    "us_indonesia_tourism": {
+        "visa_required": "Yes",
+        "visa_type": "eVisa / Visa on Arrival",
+        "stay_duration_notes": "Up to 30 days",
+        "required_documents": ["Passport", "Funds", "Return ticket"],
+        "processing_time_days": "Immediate",
+        "notes": "US passport holders can obtain an Indonesian Visa on Arrival or eVisa for tourism."
+    },
+    "uk_malaysia_medical": {
+        "visa_required": "Yes",
+        "visa_type": "Medical Visa / eVisa",
+        "stay_duration_notes": "Depends on treatment",
+        "required_documents": ["Valid passport", "Hospital letter", "Medical report", "Funds"],
+        "processing_time_days": "7-14 business days",
+        "notes": "UK citizens need to apply for a medical visa for Malaysia."
+    },
+    "uk_malaysia_tourism": {
+        "visa_required": "No",
+        "visa_type": "Visa-Free",
+        "stay_duration_notes": "Up to 90 days",
+        "required_documents": ["Valid passport"],
+        "processing_time_days": "N/A",
+        "notes": "UK citizens typically enjoy 90-day visa-free entry to Malaysia for tourism."
+    },
+    "uk_singapore_medical": {
+        "visa_required": "No",
+        "visa_type": "Visa-Free",
+        "stay_duration_notes": "Up to 30 days",
+        "required_documents": ["Passport", "Hospital letter", "Funds"],
+        "processing_time_days": "N/A",
+        "notes": "UK citizens can enter Singapore visa-free; medical visits are typically handled under tourist entry."
+    },
+    "uk_singapore_tourism": {
+        "visa_required": "No",
+        "visa_type": "Visa-Free",
+        "stay_duration_notes": "Up to 30 days",
+        "required_documents": ["Passport", "Return ticket", "Funds"],
+        "processing_time_days": "N/A",
+        "notes": "UK citizens enjoy 30-day visa-free tourism to Singapore."
+    },
+    "uk_thailand_medical": {
+        "visa_required": "Yes",
+        "visa_type": "Tourist Visa",
+        "stay_duration_notes": "Up to 60 days",
+        "required_documents": ["Passport", "Medical letter", "Funds", "Return ticket"],
+        "processing_time_days": "5-10 business days",
+        "notes": "UK citizens typically use a Tourist Visa for medical purposes in Thailand."
+    },
+    "uk_thailand_tourism": {
+        "visa_required": "No",
+        "visa_type": "Visa-Exemption",
+        "stay_duration_notes": "Up to 30 days (extendable)",
+        "required_documents": ["Passport", "Proof of funds", "Return ticket"],
+        "processing_time_days": "N/A",
+        "notes": "UK citizens can enter Thailand visa-exempt for up to 30 days, extendable."
+    },
+    "uk_indonesia_medical": {
+        "visa_required": "Yes",
+        "visa_type": "eVisa / Visa on Arrival",
+        "stay_duration_notes": "Up to 30 days",
+        "required_documents": ["Passport", "Medical documents", "Funds"],
+        "processing_time_days": "Immediate",
+        "notes": "UK citizens can apply for an Indonesian medical eVisa or Visa on Arrival."
+    },
+    "uk_indonesia_tourism": {
+        "visa_required": "Yes",
+        "visa_type": "eVisa / Visa on Arrival",
+        "stay_duration_notes": "Up to 30 days",
+        "required_documents": ["Passport", "Funds", "Return ticket"],
+        "processing_time_days": "Immediate",
+        "notes": "UK passport holders can obtain an Indonesian Visa on Arrival or eVisa for tourism."
+    },
+    "australian_malaysia_medical": {
+        "visa_required": "Yes",
+        "visa_type": "Medical Visa / eVisa",
+        "stay_duration_notes": "Treatment-based duration",
+        "required_documents": ["Passport", "Hospital letter", "Medical report", "Funds"],
+        "processing_time_days": "7-14 business days",
+        "notes": "Australian citizens need to apply for a medical visa for Malaysia."
+    },
+    "australian_malaysia_tourism": {
+        "visa_required": "No",
+        "visa_type": "Visa-Free",
+        "stay_duration_notes": "Up to 90 days",
+        "required_documents": ["Valid passport"],
+        "processing_time_days": "N/A",
+        "notes": "Australian citizens typically enjoy 90-day visa-free entry to Malaysia for tourism."
+    },
+    "australian_singapore_medical": {
+        "visa_required": "No",
+        "visa_type": "Visa-Free",
+        "stay_duration_notes": "Up to 30 days",
+        "required_documents": ["Passport", "Hospital letter", "Funds"],
+        "processing_time_days": "N/A",
+        "notes": "Australian citizens can enter Singapore visa-free; medical visits are typically handled under tourist entry."
+    },
+    "australian_singapore_tourism": {
+        "visa_required": "No",
+        "visa_type": "Visa-Free",
+        "stay_duration_notes": "Up to 30 days",
+        "required_documents": ["Passport", "Return ticket", "Funds"],
+        "processing_time_days": "N/A",
+        "notes": "Australian citizens enjoy 30-day visa-free tourism to Singapore."
+    },
+    "australian_thailand_medical": {
+        "visa_required": "Yes",
+        "visa_type": "Tourist Visa",
+        "stay_duration_notes": "Up to 60 days",
+        "required_documents": ["Passport", "Medical appointment", "Funds", "Return ticket"],
+        "processing_time_days": "5-10 business days",
+        "notes": "Australian citizens typically use a Tourist Visa for medical purposes in Thailand."
+    },
+    "australian_thailand_tourism": {
+        "visa_required": "No",
+        "visa_type": "Visa-Exemption",
+        "stay_duration_notes": "Up to 30 days (extendable)",
+        "required_documents": ["Passport", "Proof of funds", "Return ticket"],
+        "processing_time_days": "N/A",
+        "notes": "Australian citizens can enter Thailand visa-exempt for up to 30 days, extendable."
+    },
+    "australian_indonesia_medical": {
+        "visa_required": "Yes",
+        "visa_type": "eVisa / Visa on Arrival",
+        "stay_duration_notes": "Up to 30 days",
+        "required_documents": ["Passport", "Medical documents", "Funds"],
+        "processing_time_days": "Immediate",
+        "notes": "Australian citizens can apply for an Indonesian medical eVisa or Visa on Arrival."
+    },
+    "australian_indonesia_tourism": {
+        "visa_required": "Yes",
+        "visa_type": "eVisa / Visa on Arrival",
+        "stay_duration_notes": "Up to 30 days",
+        "required_documents": ["Passport", "Funds", "Return ticket"],
+        "processing_time_days": "Immediate",
+        "notes": "Australian passport holders can obtain an Indonesian Visa on Arrival or eVisa for tourism."
+    },
+    "german_malaysia_medical": {
+        "visa_required": "Yes",
+        "visa_type": "Medical Visa / eVisa",
+        "stay_duration_notes": "As needed",
+        "required_documents": ["Passport", "Hospital letter", "Medical report", "Funds"],
+        "processing_time_days": "7-14 business days",
+        "notes": "German citizens need to apply for a medical visa for Malaysia."
+    },
+    "german_malaysia_tourism": {
+        "visa_required": "No",
+        "visa_type": "Visa-Free",
+        "stay_duration_notes": "Up to 90 days",
+        "required_documents": ["Valid passport"],
+        "processing_time_days": "N/A",
+        "notes": "German citizens typically enjoy 90-day visa-free entry to Malaysia for tourism."
+    },
+    "german_singapore_medical": {
+        "visa_required": "No",
+        "visa_type": "Visa-Free",
+        "stay_duration_notes": "Up to 30 days",
+        "required_documents": ["Passport", "Hospital letter", "Funds"],
+        "processing_time_days": "N/A",
+        "notes": "German citizens can enter Singapore visa-free; medical visits are typically handled under tourist entry."
+    },
+    "german_singapore_tourism": {
+        "visa_required": "No",
+        "visa_type": "Visa-Free",
+        "stay_duration_notes": "Up to 30 days",
+        "required_documents": ["Passport", "Return ticket", "Funds"],
+        "processing_time_days": "N/A",
+        "notes": "German citizens enjoy 30-day visa-free tourism to Singapore."
+    },
+    "german_thailand_medical": {
+        "visa_required": "Yes",
+        "visa_type": "Tourist Visa",
+        "stay_duration_notes": "Up to 60 days",
+        "required_documents": ["Passport", "Medical documents", "Funds", "Return ticket"],
+        "processing_time_days": "5-10 business days",
+        "notes": "German citizens typically use a Tourist Visa for medical purposes in Thailand."
+    },
+    "german_thailand_tourism": {
+        "visa_required": "No",
+        "visa_type": "Visa-Exemption",
+        "stay_duration_notes": "Up to 30 days (extendable)",
+        "required_documents": ["Passport", "Proof of funds", "Return ticket"],
+        "processing_time_days": "N/A",
+        "notes": "German citizens can enter Thailand visa-exempt for up to 30 days, extendable."
+    },
+    "german_indonesia_medical": {
+        "visa_required": "Yes",
+        "visa_type": "eVisa / Visa on Arrival",
+        "stay_duration_notes": "Up to 30 days",
+        "required_documents": ["Passport", "Medical documents", "Funds"],
+        "processing_time_days": "Immediate",
+        "notes": "German citizens can apply for an Indonesian medical eVisa or Visa on Arrival."
+    },
+    "german_indonesia_tourism": {
+        "visa_required": "Yes",
+        "visa_type": "eVisa / Visa on Arrival",
+        "stay_duration_notes": "Up to 30 days",
+        "required_documents": ["Passport", "Funds", "Return ticket"],
+        "processing_time_days": "Immediate",
+        "notes": "German passport holders can obtain an Indonesian Visa on Arrival or eVisa for tourism."
+    },
+    "saudi_arabian_malaysia_medical": {
+        "visa_required": "Yes",
+        "visa_type": "Medical Visa / eVisa",
+        "stay_duration_notes": "As per treatment",
+        "required_documents": ["Passport", "Hospital letter", "Medical report", "Funds"],
+        "processing_time_days": "7-14 business days",
+        "notes": "Saudi Arabian citizens need to apply for a medical visa for Malaysia."
+    },
+    "saudi_arabian_malaysia_tourism": {
+        "visa_required": "No",
+        "visa_type": "Visa-Free",
+        "stay_duration_notes": "Up to 90 days",
+        "required_documents": ["Valid passport"],
+        "processing_time_days": "N/A",
+        "notes": "Saudi Arabian citizens typically enjoy 90-day visa-free entry to Malaysia for tourism."
+    },
+    "saudi_arabian_singapore_medical": {
+        "visa_required": "Yes",
+        "visa_type": "Medical Visa",
+        "stay_duration_notes": "Depends on treatment",
+        "required_documents": ["Passport", "Hospital letter", "Funds"],
+        "processing_time_days": "7-14 business days",
+        "notes": "Saudi Arabian citizens need to apply for a medical visa for Singapore."
+    },
+    "saudi_arabian_singapore_tourism": {
+        "visa_required": "Yes",
+        "visa_type": "Tourist Visa",
+        "stay_duration_notes": "Up to 30 days",
+        "required_documents": ["Passport", "Funds", "Return ticket"],
+        "processing_time_days": "7-14 business days",
+        "notes": "Saudi Arabian citizens need to apply for a tourist visa for Singapore."
+    },
+    "saudi_arabian_thailand_medical": {
+        "visa_required": "Yes",
+        "visa_type": "Tourist Visa for medical",
+        "stay_duration_notes": "Up to 60 days",
+        "required_documents": ["Passport", "Medical appointment", "Funds", "Return ticket"],
+        "processing_time_days": "5-10 business days",
+        "notes": "Saudi Arabian citizens typically use a Tourist Visa for medical purposes in Thailand."
+    },
+    "saudi_arabian_thailand_tourism": {
+        "visa_required": "No",
+        "visa_type": "Visa-Exemption",
+        "stay_duration_notes": "Up to 30 days (extendable)",
+        "required_documents": ["Passport", "Proof of funds", "Return ticket"],
+        "processing_time_days": "N/A",
+        "notes": "Saudi Arabian citizens can enter Thailand visa-exempt for up to 30 days, extendable."
+    },
+    "saudi_arabian_indonesia_medical": {
+        "visa_required": "Yes",
+        "visa_type": "eVisa / Visa on Arrival",
+        "stay_duration_notes": "Up to 30 days",
+        "required_documents": ["Passport", "Medical docs", "Funds"],
+        "processing_time_days": "Immediate",
+        "notes": "Saudi Arabian citizens can apply for an Indonesian medical eVisa or Visa on Arrival."
+    },
+    "saudi_arabian_indonesia_tourism": {
+        "visa_required": "Yes",
+        "visa_type": "eVisa / Visa on Arrival",
+        "stay_duration_notes": "Up to 30 days",
+        "required_documents": ["Passport", "Funds", "Return ticket"],
+        "processing_time_days": "Immediate",
+        "notes": "Saudi Arabian passport holders can obtain an Indonesian Visa on Arrival or eVisa for tourism."
+    },
+    "default": {
+        "visa_required": "Consult Embassy",
+        "visa_type": "Unknown",
+        "stay_duration_notes": "May vary",
+        "required_documents": ["Valid passport", "Consult official sources"],
+        "processing_time_days": "Variable",
+        "notes": "This is generic fallback information. For undefined combinations, consult the official embassy of the destination country."
+    }
+}
