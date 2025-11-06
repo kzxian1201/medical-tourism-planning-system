@@ -1,10 +1,13 @@
 # ai_service/src/agentic/graph/graph.py
+import os
 import json
 import sys
+import asyncio
 from typing import Literal, Optional, Any
 from langchain_core.messages import HumanMessage, AIMessage
 from langgraph.graph import StateGraph, END
-from langgraph.checkpoint.redis import RedisSaver
+from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.checkpoint.redis import Redis, RedisSaver
 from .state import AgentState
 from ..models import (MedicalPlanningInput, TravelArrangementInput, TravelLogisticsInput, CalculateBudgetInput, AgentResponse, MedicalPlanOption, FlightOptionSummary, AccommodationOption)
 from ..tools.medical_planning_tool import MedicalPlanningTool
@@ -12,7 +15,7 @@ from ..tools.travel_arrangement_tool import TravelArrangementTool
 from ..tools.travel_logistics_tool import TravelLogisticsTool
 from ..tools.calculate_budget_tool import CalculateBudgetTool
 from ..logger import logging
-from ..exception import CustomException
+from datetime import datetime, timedelta
 
 # --- 1. Instantiate main tool. ---
 # These are the "workers" of the graph, which will be called internally within the nodes.
@@ -63,6 +66,7 @@ def node_start_planning(state: AgentState) -> dict:
     history = state.get("chat_history", []) + [HumanMessage(content=state.get("user_input", "Start"))]
     
     return {
+        "user_profile": profile,
         "chat_history": history,
         "last_agent_message": AgentResponse(
             message_type="text",
@@ -90,7 +94,7 @@ def node_call_medical_planner(state: AgentState) -> dict:
             accompanying_guests=profile.get("accompanyingGuests", 0)
         )
         
-        result = medical_planner._run(tool_input=tool_input)
+        result = medical_planner._run(**tool_input.model_dump())
 
         if result.error:
             return _create_error_response(result.error, "Medical Planning")
@@ -146,7 +150,14 @@ def node_call_travel_planner(state: AgentState) -> dict:
     medical_plan_obj = MedicalPlanOption.model_validate(medical_plan)
     
     # Assume the user's next input is to confirm and provide a return date
-    return_date = state.get("user_input", profile.get("departureDate")) # Temporary rollback
+    return_date = profile.get("returnDate") 
+    if not return_date:
+        return_date = state.get("user_input") 
+
+    if not return_date or "I choose" in return_date:
+        departure_dt = datetime.fromisoformat(profile.get("departureDate"))
+        return_date = (departure_dt + timedelta(days=10)).strftime("%Y-%m-%d")
+        logging.warning(f"Unable to determine the return date, automatically set to: {return_date}")
     
     try:
         # Input from the AgentState build tool
@@ -162,7 +173,7 @@ def node_call_travel_planner(state: AgentState) -> dict:
             accessibility_needs=profile.get("accessibilityNeeds", []),
         )
         
-        result = travel_planner._run(tool_input=tool_input)
+        result = travel_planner._run(**tool_input.model_dump())
         
         if result.error:
             return _create_error_response(result.error, "Travel Arrangement")
@@ -222,22 +233,21 @@ def node_call_logistics_planner(state: AgentState) -> dict:
     accom = AccommodationOption.model_validate(state["final_selected_accommodation"])
     
     try:
+        return_date = state["travel_options"].estimated_return_date
+
         # Input from the AgentState build tool
         tool_input = TravelLogisticsInput(
             medical_purpose=medical_plan.treatment_name,
             medical_destination_city=medical_plan.clinic_location.split(",")[0].strip(),
             medical_destination_country=medical_plan.clinic_location.split(",")[-1].strip(),
             medical_stay_start_date=profile.get("departureDate"),
-            medical_stay_end_date=flight.segments[-1].arrival_date, 
-            medical_stay_end_date=TravelArrangementInput.model_validate(
-                state["travel_options"]
-            ).estimated_return_date, 
+            medical_stay_end_date=return_date, 
             num_guests_total=profile.get("accompanyingGuests", 0) + 1,
             airport_pick_up_required=True, 
             patient_accessibility_needs=profile.get("accessibilityNeeds", None)
         )
 
-        result = logistics_planner._run(tool_input=tool_input)
+        result = logistics_planner._run(**tool_input.model_dump())
         
         if result.error:
             return _create_error_response(result.error, "local logistics")
@@ -280,8 +290,11 @@ def node_call_budget_calculator(state: AgentState) -> dict:
     tool_input = CalculateBudgetInput(session_state={"plan_parameters": plan_params})
 
     try:
-        result_str = budget_calculator._run(tool_input=tool_input)
-        result_json = json.loads(result_str)
+        result_str = budget_calculator._run(**tool_input.model_dump())
+        if isinstance(result_str, str):
+            result_json = json.loads(result_str)
+        else:
+            result_json = result_str
         
         if result_json.get("error"):
             return _create_error_response(result_json["error"], "Calculate Budget")
@@ -367,53 +380,85 @@ def router(state: AgentState) -> Literal[
     Determines the next step in the graph based on `current_stage`.
     """
     stage = state.get("current_stage", "start")
-    logging.info(f"Router: Current Stage '{stage}'")
-    
-    # check for error first
+    user_input = (state.get("user_input") or "").lower().strip()
+    logging.info(f"Router: Current Stage = '{stage}' | User Input = '{user_input}'")
+
+    # --- handle global error / restart ---
+    if "restart" in user_input:
+        logging.warning("Router: User requested to restart entire plan.")
+        return "node_start_planning"
+
     if stage == "error":
         return "node_handle_error"
     if stage == "error_handled":
         return END
-        
-    # stage one: medical planning
+
+    # --- stage one: medical planning ---
     if stage == "start":
         return "node_start_planning"
+
     if stage == "medical_planning_pending":
         return "node_call_medical_planner"
+
     if stage == "medical_selection_pending":
-        if state.get("selected_medical_plan_id"):
+        # detect user edit / regeneration intent
+        if any(keyword in user_input for keyword in ["edit", "change", "modify", "regenerate"]):
+            logging.info("Router: User requested to edit medical plans → re-enter medical planner.")
+            return "node_call_medical_planner"
+        elif state.get("selected_medical_plan_id"):
             return "node_process_medical_selection"
         else:
-            return END 
-            
-    # stage two: travel planning
+            logging.warning("Router: No medical plan selected, ending flow.")
+            return END
+
+    # --- stage two: travel planning ---
     if stage == "travel_planning_pending":
         return "node_call_travel_planner"
+
     if stage == "travel_selection_pending":
-        if state.get("selected_flight_id") and state.get("selected_accommodation_id"):
+        if any(keyword in user_input for keyword in ["edit", "change", "modify", "regenerate"]):
+            logging.info("Router: User requested to edit travel plans → re-enter travel planner.")
+            return "node_call_travel_planner"
+        elif state.get("selected_flight_id") and state.get("selected_accommodation_id"):
             return "node_process_travel_selection"
         else:
+            logging.warning("Router: No travel plan selected, ending flow.")
             return END
-            
-    # stage three: logistics planning
+
+    # --- stage three: logistics planning ---
     if stage == "logistics_planning_pending":
+        if any(keyword in user_input for keyword in ["edit", "change", "modify", "regenerate"]):
+            logging.info("Router: User requested to edit local logistics → re-enter logistics planner.")
+            return "node_call_logistics_planner"
         return "node_call_logistics_planner"
-        
-    # stage four: budget calculation & finalization
+
+    # --- stage four: budget calculation ---
     if stage == "budget_planning_pending":
+        if any(keyword in user_input for keyword in ["edit", "change", "modify", "recalculate", "adjust"]):
+            logging.info("Router: User requested to recalculate budget → rerun budget calculator.")
         return "node_call_budget_calculator"
+
+    # --- stage five: final plan generation ---
     if stage == "final_plan_generation_pending":
         return "node_generate_final_plan"
-    if stage == "final_plan_confirmation_pending":
-        if state.get("user_input", "").lower() in ["confirm", "yes", "确认"]:
-            return END 
-        else:
+
+    if stage == "final_confirmation_pending":
+        if any(keyword in user_input for keyword in ["edit", "change", "modify", "regenerate"]):
+            logging.info("Router: User requested to modify final plan → restart from medical stage.")
+            return "node_call_medical_planner"
+        elif user_input in ["confirm", "yes", "ok"]:
+            logging.info("Router: User confirmed final plan → END.")
             return END
-            
-    return END 
+        else:
+            logging.warning("Router: No valid confirmation received, ending flow.")
+            return END
+
+    # --- fallback ---
+    logging.warning(f"Router: Unrecognized stage '{stage}', ending flow.")
+    return END
 
 # --- 5. Building and compiling graphs ---
-def create_graph():
+def create_graph(checkpointer: InMemorySaver | RedisSaver):    
     """
     Create and compile the LangGraph workflow.
     """
@@ -434,51 +479,86 @@ def create_graph():
     # set entry point
     workflow.set_entry_point("node_start_planning")
 
-    # add edges
+    # add edges (keeps your existing flow)
     workflow.add_edge("node_start_planning", "node_call_medical_planner")
-    
-    # stage one -> interrupt
-    workflow.add_conditional_edges(
-        "node_call_medical_planner",
-        lambda s: END if s["current_stage"] == "medical_selection_pending" else "node_handle_error",
-        {END: END, "node_handle_error": "node_handle_error"}
-    )
-    
-    # (from interrupt resume) -> stage two
     workflow.add_edge("node_process_medical_selection", "node_call_travel_planner")
-    
-    # stage two -> interrupt
-    workflow.add_conditional_edges(
-        "node_call_travel_planner",
-        lambda s: END if s["current_stage"] == "travel_selection_pending" else "node_handle_error",
-        {END: END, "node_handle_error": "node_handle_error"}
-    )
-    
-    # (from interrupt resume) -> stage three
     workflow.add_edge("node_process_travel_selection", "node_call_logistics_planner")
-    
-    # stage three -> stage four
     workflow.add_edge("node_call_logistics_planner", "node_call_budget_calculator")
     workflow.add_edge("node_call_budget_calculator", "node_generate_final_plan")
     workflow.add_edge("node_generate_final_plan", "node_ask_final_confirmation")
-
-    # final confirmation -> END
-    workflow.add_edge("node_ask_final_confirmation", END)
-    
-    # error handling
     workflow.add_edge("node_handle_error", END)
 
-    # --- Compile the graph and add persistence. ---
-    try:
-        memory = RedisSaver.from_conn_string("redis://localhost:6379")
-        logging.info("Redis checkpointer (persistent memory) connection successful.")
-    except Exception as e:
-        logging.warning(f"Unable to connect to Redis: {e}. The graph will not be able to persist its state! Please ensure that Redis is running.")
-        memory = None
+    # conditional/interrupt edges (preserve your intent)
+    workflow.add_conditional_edges(
+        "node_call_medical_planner",
+        lambda s: "node_process_medical_selection" if s.get("current_stage") == "medical_selection_pending" else "node_handle_error",
+    )
+    workflow.add_conditional_edges(
+        "node_call_travel_planner",
+        lambda s: "node_process_travel_selection" if s.get("current_stage") == "travel_selection_pending" else "node_handle_error",
+    )
 
-    app = workflow.compile(checkpointer=memory, interrupt_before=["*"])
-    
-    logging.info("The LangGraph manager has been compiled.")
+    # compile; 
+    try:
+        app = workflow.compile(
+            checkpointer=checkpointer,
+            interrupt_before=[
+                "node_process_medical_selection", 
+                "node_process_travel_selection",
+                "node_call_budget_calculator",  
+                "node_ask_final_confirmation" 
+            ]
+        )
+
+        logging.info("LangGraph 1.0 graph compiled successfully.")
+    except Exception as e:
+        logging.error(f"Failed to compile LangGraph workflow: {e}", exc_info=True)
+        raise
+
     return app
 
-app = create_graph()
+# --- 6. Local unit tests ---
+if __name__ == "__main__":
+    logging.info("--- [Graph Test] Initializing Checkpointer (main thread) ---")
+
+    async def run_test(): 
+        """
+        An independent asynchronous function used for unit testing our Graph.
+        """
+        try:
+            redis_url = os.getenv("REDIS_URL", "redis://127.0.0.1:6379")
+            redis_saver = RedisSaver.from_conn_string(redis_url) 
+            logging.info("[Graph Test] Redis checkpointer (persistent memory) connection successful.")
+            await _run_test_with(redis_saver)
+        except Exception as e:
+            logging.warning(f"[Graph Test] RedisSaver failed ({e}), fallback to InMemorySaver.")
+            memory = InMemorySaver()
+            await _run_test_with(memory)
+
+    async def _run_test_with(checkpointer):
+        logging.info("--- [Graph Test] Start unit test (inside async) ---")
+
+        test_app = create_graph(checkpointer)
+        config = {"configurable": {"thread_id": "test-session-12345"}}
+
+        inputs_step1 = {
+            "user_input": "I want to start planning",
+            "user_profile": {
+                "nationality": "Chinese",
+                "medicalPurpose": "Heart Bypass Surgery",
+                "estimatedBudget": "20000",
+                "departureCity": "Beijing",
+                "destination_country": "Malaysia",
+                "departureDate": "2025-08-01",
+                "accompanyingGuests": 1
+            },
+            "current_stage": "start"
+        }
+
+        async for event in test_app.astream(inputs_step1, config, stream_mode="values"):
+            logging.info(f"[Graph Test] Stream Event: {event.get('current_stage')}")
+
+        final_state = await test_app.aget_state(config)
+        logging.info(f"Final state: {final_state.values.keys()}")
+
+    asyncio.run(run_test())

@@ -25,7 +25,7 @@ class AgentState(TypedDict):
     selected_flight_id: Optional[str]
     selected_accommodation_id: Optional[str]
     
-    # --- 4. 最终确定的计划 (用于生成报告) ---
+    # --- 4. finalize the plan ---
     final_selected_medical_plan: Optional[MedicalPlanOption]    
     final_selected_flight: Optional[FlightOptionSummary]    
     final_selected_accommodation: Optional[AccommodationOption]

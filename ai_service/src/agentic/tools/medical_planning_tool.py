@@ -17,7 +17,7 @@ from .medical_db_search_tool import MedicalDBSearchTool
 from .medical_cost_estimator_tool import MedicalCostEstimatorTool
 from .check_visa_requirements_tool import VisaRequirementsCheckerTool
 from .web_research_tool import WebResearchTool
-from langchain.output_parsers import PydanticOutputParser
+from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.runnables import RunnableLambda
 
 try:
@@ -230,12 +230,12 @@ class MedicalPlanningTool(BaseAsyncTool):
 
         if not validated_options_list.root:
             logging.info("Falling back to web research results...")
-            if web_results and "organic_results" in web_results:
+            if web_results and "organic_results" in web_results and web_results["organic_results"]:
                 validated_options_list = MedicalPlanOptionList(root=[
                     MedicalPlanOption(
                         treatment_name="Web Researched Option",
                         estimated_cost_usd="Unknown",
-                        clinic_name=web_results["organic_results"][0].get("title", "Unknown"),
+                        clinic_name=web_results["organic_results"][0].get("title", "Unknown"), # <-- 现在安全了
                         clinic_location="Unknown",
                         brief_description=web_results["organic_results"][0].get("snippet", ""),
                         image_url=None,

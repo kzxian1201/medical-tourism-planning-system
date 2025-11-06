@@ -16,8 +16,11 @@ load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '..', '.en
 # --- Custom Imports from local modules ---
 from ai_service.src.agentic.logger import logging
 from ai_service.src.agentic.exception import CustomException
-from ai_service.src.agentic.graph.graph import app as planning_agent_graph, memory as redis_checkpointer
-from ai_service.src.agentic.models import NextStepRequest, AgentResponse, LoadSessionRequest, AgentState
+from ai_service.src.agentic.graph.graph import create_graph 
+from langgraph.checkpoint.redis import RedisSaver
+from langgraph.checkpoint.memory import InMemorySaver
+from ai_service.src.agentic.models import NextStepRequest, AgentResponse, LoadSessionRequest
+from ai_service.src.agentic.graph.state import AgentState
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -37,6 +40,7 @@ app.add_middleware(
 
 # A global variable to hold the agent executor instance
 planning_agent_executor = None
+redis_checkpointer = None
 
 @app.on_event("startup")
 async def startup_event():
@@ -44,17 +48,22 @@ async def startup_event():
     Event hook that runs once when the application starts.
     We use this to initialize the agent asynchronously.
     """
-    global planning_agent_executor
+    global planning_agent_executor, redis_checkpointer
     try:
+        logging.info("Initializing Redis Checkpointer...")
+
+        redis_url = os.getenv("REDIS_URL", "redis://127.0.0.1:6379")
+        try:
+            ctx = RedisSaver.from_conn_string(redis_url)
+            redis_checkpointer = ctx.__enter__() 
+            logging.info("Redis checkpointer (persistent memory) connection successful.")
+        except Exception as e:
+            logging.warning(f"RedisSaver failed ({e}), fallback to InMemorySaver.")
+            redis_checkpointer = InMemorySaver()
+
         logging.info("Loading LangGraph Supervisor...")
-        planning_agent_executor = planning_agent_graph
-        
-        # check Redis checkpointer
-        if redis_checkpointer is None:
-            logging.warning("Redis Checkpointer failed to initialize. The graph will not be able to persist sessions!")
-        else:
-            logging.info("LangGraph Supervisor has been loaded. Redis Checkpointer is connected.")
-            
+        planning_agent_executor = create_graph(redis_checkpointer)
+        logging.info("LangGraph Supervisor loaded successfully.")
     except Exception as e:
         logging.error(f"Failed to load LangGraph Supervisor: {e}", exc_info=True)
         sys.exit(1)
@@ -74,18 +83,22 @@ async def next_step(body: NextStepRequest):
 
     # --- 1. Define LangGraph configuration ---
     # Implement persistence and interruption handling
-    config = {"configurable": {"session_id": session_id}}
+    config = {
+        "configurable": {
+            "thread_id": f"session-{session_id}",   
+            "session_id": session_id           
+        }
+    }
 
     # --- 2. Prepare the input for the graph. ---
     # Map the data received from the frontend to AgentState.
     inputs = {
         "user_input": body.user_input,
         "user_profile": body.session_state.get("profileData", {}),
-        
-        # Inject the user's selection (if it exists)
-        "selected_medical_plan_id": body.session_state.get("selected_medical_plan_id", None),
-        "selected_flight_id": body.session_state.get("selected_flight_id", None),
-        "selected_accommodation_id": body.session_state.get("selected_accommodation_id", None)
+        "selected_medical_plan_id": body.session_state.get("selected_medical_plan_id"),
+        "selected_flight_id": body.session_state.get("selected_flight_id"),
+        "selected_accommodation_id": body.session_state.get("selected_accommodation_id"),
+        "current_stage": body.session_state.get("current_stage", "start")  # ✅ ensure default
     }
 
     # --- 3. Call LangGraph ---

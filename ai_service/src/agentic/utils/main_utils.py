@@ -24,7 +24,7 @@ if missing_keys:
 
 class LoadModel:
     @classmethod
-    def load_llm_model(cls, model_name: str = "gemini-1.5-flash", temperature: float = 0.7):
+    def load_llm_model(cls, model_name: str = "gemini-2.5-flash", temperature: float = 0.7):
         try:
             logging.info(f"Loading Google Gemini model: {model_name}")
             
