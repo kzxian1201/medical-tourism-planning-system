@@ -2,20 +2,24 @@
 import sys
 import sqlite3
 import json
-import asyncio
-import nest_asyncio
 import os
-from typing import List, Type
+from typing import List, Type, Optional, Any
 from ..logger import logging
 from ..exception import CustomException
 from ..models import (MedicalDBSearchInput, MedicalDBSearchOutput,HospitalDetails, TreatmentDetails, DoctorDetails)
 from langchain_core.tools import BaseTool
 from pydantic import ValidationError
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_chroma import Chroma
 
 class MedicalDBSearchTool(BaseTool):
     """
-    A tool to search the local SQLite database for medical treatments,
-    hospital information, and related details.
+    An "adaptive RAG" tool for searching a local medical database.
+    It decides whether to use
+    (1) vector search (ChromaDB)
+    (2) SQL search (SQLite)
+    (3) hybrid search (Vector + SQL)
+    based on whether the query is "semantic" or "structured".
     """
     name: str = "medical_db_search"
     description: str = (
@@ -23,18 +27,38 @@ class MedicalDBSearchTool(BaseTool):
         Input MUST be a JSON object conforming to MedicalDBSearchInput schema with 'type' and specific query conditions.
         'type' can be 'hospital', 'treatment', or 'doctor'.
 
-        For 'hospital' type, keys can include: 'name', 'specialty', 'location', 'international_services' (boolean), 'accessibility_features', 'min_rating', 'treatment_id'.
-        Example: {"type": "hospital", "specialty": "Dentistry", "location": "Kuala Lumpur", "international_services": true, "min_rating": 4.5}
-
-        For 'treatment' type, keys can include: 'name', 'specialty', 'min_cost', 'max_cost', 'cost_unit'.
-        Example: {"type": "treatment", "name": "Rhinoplasty", "specialty": "Plastic Surgery", "min_cost": 4000, "max_cost": 8000, "cost_unit": "USD"}
-
-        For 'doctor' type, keys can include: 'name', 'specialty', 'location', 'affiliated_hospital_id', 'min_experience_years', 'min_rating'.
-        Example: {"type": "doctor", "specialty": "Orthopedic Surgery", "min_rating": 4.8}
+        For 'hospital' type, keys can include: 'name' (semantic), 'specialty' (semantic/SQL), 'location' (SQL), 'international_services' (boolean, SQL), 'accessibility_features' (SQL), 'min_rating' (SQL), 'treatment_id' (SQL).
+        Example 1 (Semantic): {"type": "hospital", "name": "best hospital for heart surgery in Kuala Lumpur"}
+        Example 2 (Structured): {"type": "hospital", "location": "Kuala Lumpur", "min_rating": 4.5}
+        Example 3 (Hybrid): {"type": "hospital", "name": "quiet hospital for recovery", "location": "Malaysia", "min_rating": 4.0}
         """
     )
 
     args_schema: Type[MedicalDBSearchInput] = MedicalDBSearchInput
+
+    _vector_store: Chroma = None
+    _embedding_model: GoogleGenerativeAIEmbeddings = None
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        try:
+            DB_DIR = os.path.join(os.path.dirname(__file__), '..', '..', 'db')
+            CHROMA_DB_PATH = os.path.join(DB_DIR, 'chroma_vector_store')
+
+            self._embedding_model = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
+            
+            if not os.path.exists(CHROMA_DB_PATH):
+                logging.error(f"ChromaDB path not found: {CHROMA_DB_PATH}. Did you run rag_setup.py?")
+                raise FileNotFoundError(f"ChromaDB not found at {CHROMA_DB_PATH}")
+
+            self._vector_store = Chroma(
+                persist_directory=CHROMA_DB_PATH,
+                embedding_function=self._embedding_model
+            )
+            logging.info(f"MedicalDBSearchTool: ChromaDB vector store loaded from {CHROMA_DB_PATH}")
+        except Exception as e:
+            logging.error(f"Failed to initialize ChromaDB in MedicalDBSearchTool: {e}", exc_info=True)
+            raise CustomException(sys, e)
 
     def _get_db_connection(self):
         db_path = os.path.join(os.path.dirname(__file__), '..', '..', 'db', 'medical_rag.db')
@@ -79,22 +103,25 @@ class MedicalDBSearchTool(BaseTool):
                 data[field] = self.ensure_list(val)
         return data
     
-    async def _fetch_hospital_data(self, **kwargs) -> List[HospitalDetails]:
+    async def _fetch_hospital_data(self, id_list: Optional[List[str]] = None, **kwargs) -> List[HospitalDetails]:
         try:
             conn = self._get_db_connection()
             cursor = conn.cursor()
             query = "SELECT * FROM hospitals WHERE 1=1"
             params = []
 
-            if kwargs.get('name'):
+            # ID filtering for hybrid search
+            if id_list:
+                if not id_list: return [] # If the ID list is empty, return immediately
+                query += f" AND id IN ({','.join('?' for _ in id_list)})"
+                params.extend(id_list)
+
+            if kwargs.get('name') and not id_list: 
                 query += " AND name LIKE ?"
                 params.append(f"%{kwargs['name']}%")
             if kwargs.get('specialty'):
-                query += " AND medical_professionalism LIKE ?"
-                params.append(f'%"{kwargs["specialty"]}"%')
-            if kwargs.get('treatment_name'):
-                query += " AND treatments_offered LIKE ?"
-                params.append(f'%"{kwargs["treatment_name"]}"%')
+                query += " AND (medical_professionalism LIKE ? OR specialties LIKE ?)"
+                params.extend([f'%"{kwargs["specialty"]}"%', f'%"{kwargs["specialty"]}"%'])
             if kwargs.get('treatment_id'):
                 query += " AND treatments_offered LIKE ?"
                 params.append(f'%"{kwargs["treatment_id"]}"%')
@@ -102,114 +129,106 @@ class MedicalDBSearchTool(BaseTool):
                 query += " AND (city LIKE ? OR country LIKE ?)"
                 params.extend([f"%{kwargs['location']}%", f"%{kwargs['location']}%"])
             if kwargs.get('international_services') is not None:
-                query += " AND international_patient_services LIKE ?"
-                params.append(f'%\"has_international_patient_center\": {str(kwargs["international_services"]).lower()}%')
+                query += " AND international_services = ?" 
+                params.append(int(kwargs["international_services"]))
             if kwargs.get('accessibility_features'):
                 query += " AND accessibility_features LIKE ?"
                 params.append(f"%{kwargs['accessibility_features']}%")
             if kwargs.get('min_rating'):
-                query += " AND average_rating >= ?"
+                query += " AND CAST(json_extract(brand_reputation, '$.average_rating') AS REAL) >= ?"
                 params.append(kwargs['min_rating'])
-            if kwargs.get('doctor_id'):
-                query += " AND famous_doctors LIKE ?"
-                params.append(f'%"{kwargs["doctor_id"]}"%')
-
+            
             cursor.execute(query, params)
             rows = cursor.fetchall()
             results = []
             columns = [desc[0] for desc in cursor.description]
-
-            # Unified normalization config
             normalize_config = {
-                'geo_location': 'dict',
+                'geo_location': 'dict', 
                 'contact': 'dict',
-                'medical_professionalism': {
-                    'certifications': 'list',
-                    'key_specializations': 'list',
-                    'advanced_technology_overview': 'list'
-                },
-                'international_patient_services': {
-                    'languages_supported': 'list',
-                    'cultural_accommodations': 'list'
-                },
-                'brand_reputation': 'dict',
-                'treatments_offered': 'list',
+                'medical_professionalism': {'certifications': 'list', 'key_specializations': 'list', 'advanced_technology_overview': 'list'},
+                'international_patient_services': {'languages_supported': 'list', 'cultural_accommodations': 'list'},
+                'brand_reputation': 'dict', 
+                'treatments_offered': 'list', 
                 'geographical_convenience': 'dict',
-                'cost_and_value': 'dict',
-                'famous_doctors': 'list',
+                'cost_and_value': 'dict', 
+                'famous_doctors': 'list', 
                 'equipment_list': 'list',
-                'tourism_packages': 'list',
+                'tourism_packages': 'list', 
                 'accessibility_features': 'list'
             }
-
             for row in rows:
                 data = dict(zip(columns, row))
                 data = self._normalize_fields(data, normalize_config)
                 results.append(HospitalDetails(**data))
-
             logging.debug(f"[fetch_hospital_data] Matched results: {len(results)}")
             return results
         except Exception as e:
             logging.error(f"Error fetching hospital data: {e}", exc_info=True)
             raise CustomException(sys, e)
 
-    async def _fetch_treatment_data(self, **kwargs) -> List[TreatmentDetails]:
+    async def _fetch_treatment_data(self, id_list: Optional[List[str]] = None, **kwargs) -> List[TreatmentDetails]:
         try:
             conn = self._get_db_connection()
             cursor = conn.cursor()
             query = "SELECT * FROM treatments WHERE 1=1"
             params = []
 
-            if kwargs.get('name'):
+            # ID filtering for hybrid search
+            if id_list:
+                if not id_list: return []
+                query += f" AND id IN ({','.join('?' for _ in id_list)})"
+                params.extend(id_list)
+
+            if kwargs.get('name') and not id_list:
                 query += " AND name LIKE ?"
                 params.append(f"%{kwargs['name']}%")
             if kwargs.get('specialty'):
                 query += " AND associated_specialties LIKE ?"
                 params.append(f'%"{kwargs["specialty"]}"%')
             if kwargs.get('min_cost'):
-                query += " AND estimated_market_cost_range_usd_min >= ?"
+                query += " AND estimated_market_cost_usd_min >= ?"
                 params.append(kwargs['min_cost'])
             if kwargs.get('max_cost'):
-                query += " AND estimated_market_cost_range_usd_max <= ?"
+                query += " AND estimated_market_cost_usd_max <= ?"
                 params.append(kwargs['max_cost'])
-            if kwargs.get("cost_unit"):
-                query += " AND LOWER(cost_unit) = ?"
-                params.append(kwargs["cost_unit"].lower())
 
             cursor.execute(query, params)
             rows = cursor.fetchall()
             results = []
             columns = [desc[0] for desc in cursor.description]
-
             normalize_config = {
                 'associated_specialties': 'list',
                 'typical_hospital_stay': 'dict',
-                'estimated_recovery_time': 'dict',
-                'common_benefits': 'list',
+                'estimated_recovery_time': 'dict', 
+                'common_benefits': 'list', 
                 'potential_risks': 'list',
-                'pre_procedure_requirements': 'list',
+                'pre_procedure_requirements': 'list', 
                 'post_procedure_follow_ups': 'list'
             }
-
             for row in rows:
                 data = dict(zip(columns, row))
                 data = self._normalize_fields(data, normalize_config)
                 results.append(TreatmentDetails(**data))
-
             logging.debug(f"[fetch_treatment_data] Matched results: {len(results)}")
             return results
         except Exception as e:
             logging.error(f"Error fetching treatment data: {e}", exc_info=True)
             raise CustomException(sys, e)
 
-    async def _fetch_doctor_data(self, **kwargs) -> List[DoctorDetails]:
+    async def _fetch_doctor_data(self, id_list: Optional[List[str]] = None, **kwargs) -> List[DoctorDetails]:
         try:
             conn = self._get_db_connection()
             cursor = conn.cursor()
             query = "SELECT * FROM doctors WHERE 1=1"
             params = []
 
-            if kwargs.get('name'):
+            # ID filtering for hybrid search
+            if id_list:
+                if not id_list: return []
+                query += f" AND id IN ({','.join('?' for _ in id_list)})"
+                params.extend(id_list)
+
+            if kwargs.get('name') and not id_list:
                 query += " AND name LIKE ?"
                 params.append(f"%{kwargs['name']}%")
             if kwargs.get('specialty'):
@@ -229,28 +248,48 @@ class MedicalDBSearchTool(BaseTool):
             rows = cursor.fetchall()
             results = []
             columns = [desc[0] for desc in cursor.description]
-
             normalize_config = {
-                'contact_info': 'dict',
+                'contact_info': 'dict', 
                 'affiliated_hospital_ids': 'list',
-                'languages_spoken': 'list',
-                'certifications': 'list',
+                'languages_spoken': 'list', 
+                'certifications': 'list', 
                 'awards': 'list'
             }
-
             for row in rows:
                 data = dict(zip(columns, row))
                 data = self._normalize_fields(data, normalize_config)
                 results.append(DoctorDetails(**data))
-
             logging.debug(f"[fetch_doctor_data] Matched results: {len(results)}")
             return results
         except Exception as e:
             logging.error(f"Error fetching doctor data: {e}", exc_info=True)
             raise CustomException(sys, e)
 
+    # --- Vector search function ---
+    async def _fetch_vector_search_ids(self, query: str, search_type: str, k_results: int = 10) -> List[str]:
+        """
+        Perform a semantic search and return a list of source_ids for matching documents.
+        """
+        if not query:
+            return []
+            
+        logging.info(f"Executing vector search for type '{search_type}' with query: '{query}'")
+        try:
+            # Using both query and metadata filtering allows ChromaDB to perform powerful searches
+            retriever = self._vector_store.as_retriever(
+                search_kwargs={"k": k_results, "filter": {"type": search_type}}
+            )
+            docs = await retriever.ainvoke(query)
+            
+            ids = [doc.metadata["source_id"] for doc in docs if "source_id" in doc.metadata]
+            logging.info(f"Vector search found {len(ids)} matching IDs.")
+            return ids
+        except Exception as e:
+            logging.error(f"Error during vector search: {e}", exc_info=True)
+            return []
 
-    async def _arun(self, tool_input: MedicalDBSearchInput) -> MedicalDBSearchOutput:
+
+    async def _arun(self, **kwargs: Any) -> MedicalDBSearchOutput:
         message = ""
         error = None
         hospital_results = []
@@ -258,39 +297,59 @@ class MedicalDBSearchTool(BaseTool):
         doctor_results = []
 
         try:
-            if tool_input.type == "hospital":
+            tool_input = self.args_schema(**kwargs)
+        except ValidationError as e:
+            logging.error(f"Input validation failed for MedicalDBSearchTool: {e}", exc_info=True)
+            return MedicalDBSearchOutput(message="Input validation failed.", error=str(e))
+
+        try:
+            # Convert Pydantic input into a dictionary
+            query_kwargs = tool_input.model_dump(exclude_unset=True)
+            search_type = query_kwargs.pop('type', None)
+            
+            # --- Adaptive RAG Routing Logic ---
+            # 1. Determine the search strategy, defining a "semantic" query as one that uses the 'name' field.
+            semantic_query = query_kwargs.get('name')
+            # A "structured" query refers to any field other than 'name'
+            structured_filters = {k: v for k, v in query_kwargs.items() if k != 'name'}
+
+            vector_search_ids: Optional[List[str]] = None
+
+            if semantic_query:
+                # Strategy 2 (semantic) or 3 (hybrid): If there is a semantic query, perform vector search first.
+                search_query_text = semantic_query
+                # Add some structured filters to the text to get better results.
+                if query_kwargs.get('specialty'):
+                    search_query_text += f" (specialty: {query_kwargs['specialty']})"
+                if query_kwargs.get('location'):
+                    search_query_text += f" (location: {query_kwargs['location']})"
+                
+                vector_search_ids = await self._fetch_vector_search_ids(search_query_text, search_type)
+            
+            # 2. Executing the query – `vector_search_ids` (from vector search) and `structured_filters` (from SQL) will be passed to the `fetch` function.
+            
+            if search_type == "hospital":
                 hospital_results = await self._fetch_hospital_data(
-                    name=tool_input.name,
-                    specialty=tool_input.specialty,
-                    location=tool_input.location,
-                    international_services=tool_input.international_services,
-                    accessibility_features=tool_input.accessibility_features,
-                    min_rating=tool_input.min_rating,
-                    treatment_id=tool_input.treatment_id
+                    id_list=vector_search_ids, 
+                    **structured_filters
                 )
                 message = f"Found {len(hospital_results)} hospitals."
-            elif tool_input.type == "treatment":
+            elif search_type == "treatment":
                 treatment_results = await self._fetch_treatment_data(
-                    name=tool_input.name,
-                    specialty=tool_input.specialty,
-                    min_cost=tool_input.min_cost,
-                    max_cost=tool_input.max_cost,
-                    cost_unit=tool_input.cost_unit
+                    id_list=vector_search_ids, 
+                    **structured_filters
                 )
                 message = f"Found {len(treatment_results)} treatments."
-            elif tool_input.type == "doctor":
+            elif search_type == "doctor":
                 doctor_results = await self._fetch_doctor_data(
-                    name=tool_input.name,
-                    specialty=tool_input.specialty,
-                    location=tool_input.location,
-                    affiliated_hospital_id=tool_input.affiliated_hospital_id,
-                    min_experience_years=tool_input.min_experience_years,
-                    min_rating=tool_input.min_rating
+                    id_list=vector_search_ids, 
+                    **structured_filters
                 )
                 message = f"Found {len(doctor_results)} doctors."
             else:
                 message = "Invalid search type."
                 error = "Type must be 'hospital', 'treatment', or 'doctor'."
+
         except ValidationError as e:
             error = f"Input validation error: {e}"
             message = "Invalid input for search operation."
@@ -311,25 +370,7 @@ class MedicalDBSearchTool(BaseTool):
             message=message,
             error=error
         )
-
-    def _run(self, tool_input: MedicalDBSearchInput) -> MedicalDBSearchOutput:
-        """
-        Synchronous wrapper for async execution with robust event loop handling.
-        """
-        try:
-            try:
-                loop = asyncio.get_event_loop()
-            except RuntimeError:
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-
-            if loop.is_running():
-                nest_asyncio.apply()
-                return loop.run_until_complete(self._arun(tool_input))
-            else:
-                return loop.run_until_complete(self._arun(tool_input))
-        except ValidationError as e:
-            raise e
-        except Exception as e:
-            logging.error("Error during synchronous run of MedicalDBSearchTool", exc_info=True)
-            raise CustomException(sys, e)
+    
+    def _run(self, **kwargs: Any) -> Any:
+        """Synchronous run method (not recommended for this async-first tool)."""
+        raise NotImplementedError("This tool is async-first. Please use .ainvoke() or await ._arun()")

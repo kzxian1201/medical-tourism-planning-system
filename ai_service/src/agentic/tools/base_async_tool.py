@@ -3,7 +3,6 @@ import asyncio
 import nest_asyncio
 from typing import Any
 from langchain_core.tools import BaseTool
-from pydantic import BaseModel
 
 class BaseAsyncTool(BaseTool):
     """

@@ -1,15 +1,14 @@
 # ai_service/src/agentic/tools/search_accessible_accommodation_tool.py
 import sys
 import json
-import asyncio
-import nest_asyncio
 import os
 from datetime import datetime
 from typing import Dict, Any, Optional, List, Type
 from ..logger import logging
 from ..exception import CustomException
 from ..models import AccessibleAccommodationInput, AccessibleAccommodationOutput, AccommodationOption
-from langchain_core.tools import BaseTool
+from langchain_core.tools import BaseTool 
+from pydantic import ValidationError
 
 class AccessibleAccommodationTool(BaseTool):
     """
@@ -103,10 +102,16 @@ class AccessibleAccommodationTool(BaseTool):
             logging.warning(f"Failed to build AccommodationOption: {option_data}, error: {e}")
             return None
         
-    async def _arun(self, tool_input: AccessibleAccommodationInput) -> AccessibleAccommodationOutput:
+    async def _arun(self, **kwargs: Any) -> AccessibleAccommodationOutput:
         """
         Asynchronously searches for accessible accommodations based on the provided input.
         """
+        try:
+            tool_input = self.args_schema(**kwargs)
+        except ValidationError as e:
+            logging.error(f"Input validation failed for AccessibleAccommodationTool: {e}", exc_info=True)
+            return AccessibleAccommodationOutput(accommodation_options=[], message="Input validation failed.", error=str(e))
+        
         destination_city = tool_input.destination_city
         destination_country = tool_input.destination_country
         check_in_date = tool_input.check_in_date
@@ -167,24 +172,7 @@ class AccessibleAccommodationTool(BaseTool):
                 message="Search failed due to unexpected error.",
                 error=f"Exception: {str(e)}"
             )
-
-    def _run(self, tool_input: AccessibleAccommodationInput) -> AccessibleAccommodationOutput:
-        """Synchronous wrapper for asynchronous execution with error handling."""
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-
-        if loop.is_running():
-            nest_asyncio.apply()
-
-        try:
-            return loop.run_until_complete(self._arun(tool_input))
-        except Exception as e:
-            logging.error(f"Sync wrapper error: {e}")
-            return AccessibleAccommodationOutput(
-                accommodation_options=[],
-                message="Search failed in sync wrapper.",
-                error=f"Exception in _run: {str(e)}"
-            )
+        
+    def _run(self, **kwargs: Any) -> Any:
+        """Synchronous run method (not recommended for this async-first tool)."""
+        raise NotImplementedError("This tool is async-first. Please use .ainvoke() or await ._arun()")

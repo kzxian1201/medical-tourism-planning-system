@@ -1,9 +1,17 @@
+# ai_service/rag_setup.py
 import sqlite3
 import json
 import os
 import sys
 import logging
-import datetime # Import datetime for timestamps
+import datetime
+from typing import List
+from langchain_core.documents import Document
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_chroma import Chroma
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -12,6 +20,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_DIR = os.path.join(BASE_DIR, 'src', 'db')
 DB_FILE = os.path.join(DB_DIR, 'medical_rag.db')
 DATA_DIR = os.path.join(BASE_DIR, 'src', 'data')
+CHROMA_DB_PATH = os.path.join(DB_DIR, 'chroma_vector_store')
 
 # Define paths to JSON data files
 TREATMENTS_JSON_FILE = os.path.join(DATA_DIR, 'treatments.json')
@@ -658,8 +667,124 @@ def import_data():
         if conn:
             conn.close()
 
+def _load_json_data(file_path: str) -> list:
+    """Helper function: Loads a JSON file and returns a list."""
+    if not os.path.exists(file_path):
+        logging.warning(f"JSON file not found at {file_path}. Skipping.")
+        return []
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except json.JSONDecodeError as e:
+        logging.error(f"Error decoding JSON from {file_path}: {e}")
+        return []
+
+def create_rag_documents() -> List[Document]:
+    """
+    Create LangChain Document objects for vector search from a JSON file.
+    """
+    documents = []
+    
+    # 1. handle Hospitals
+    hospitals_data = _load_json_data(HOSPITALS_JSON_FILE)
+    for hospital in hospitals_data:
+        # Create a "rich text" block for semantic search.
+        content = (
+            f"Hospital: {hospital.get('name', '')}\n"
+            f"Location: {hospital.get('city', '')}, {hospital.get('country', '')}\n"
+            f"Overview: {hospital.get('description_overview', '')}\n"
+            f"Specialties: {', '.join(hospital.get('medical_professionalism', {}).get('key_specializations', []))}\n"
+            f"Reputation: {hospital.get('brand_reputation', {}).get('review_summary_overview', '')}"
+        )
+        
+        # Store all filterable fields as metadata.
+        metadata = {
+            "source_id": hospital.get('id'),
+            "type": "hospital",
+            "city": hospital.get('city'),
+            "country": hospital.get('country'),
+            "average_rating": float(hospital.get('brand_reputation', {}).get('average_rating', 0)),
+            "specialties": ", ".join(hospital.get('medical_professionalism', {}).get('key_specializations', [])) 
+        }
+        documents.append(Document(page_content=content, metadata=metadata))
+        
+    # 2. handle Treatments
+    treatments_data = _load_json_data(TREATMENTS_JSON_FILE)
+    for treatment in treatments_data:
+        content = (
+            f"Treatment: {treatment.get('name', '')}\n"
+            f"Description: {treatment.get('description', '')}\n"
+            f"Specialties: {', '.join(treatment.get('associated_specialties', []))}\n"
+            f"Benefits: {', '.join(treatment.get('common_benefits', []))}"
+        )
+        metadata = {
+            "source_id": treatment.get('id'),
+            "type": "treatment",
+            "specialties": ", ".join(treatment.get('associated_specialties', [])), 
+            "min_cost_usd": float(treatment.get('estimated_market_cost_range_usd_min', 0)),
+            "max_cost_usd": float(treatment.get('estimated_market_cost_range_usd_max', 0))
+        }
+        documents.append(Document(page_content=content, metadata=metadata))
+
+    # 3. handle Doctors
+    doctors_data = _load_json_data(DOCTORS_JSON_FILE)
+    for doctor in doctors_data:
+        content = (
+            f"Doctor: {doctor.get('name', '')}\n"
+            f"Specialty: {doctor.get('specialty', '')}\n"
+            f"Biography: {doctor.get('bio', '')}\n"
+            f"Experience: {doctor.get('experience_years', 0)} years"
+        )
+        metadata = {
+            "source_id": doctor.get('id'),
+            "type": "doctor",
+            "specialty": doctor.get('specialty'),
+            "average_rating": float(doctor.get('average_rating', 0)),
+            "experience_years": int(doctor.get('experience_years', 0))
+        }
+        documents.append(Document(page_content=content, metadata=metadata))
+        
+    logging.info(f"Created {len(documents)} documents for RAG vector store.")
+    return documents
+
+def setup_vector_store():
+    """
+    Initialize the embedding model and ChromaDB, and populate it with data.
+    """
+    try:
+        logging.info("Initializing Google Generative AI Embeddings...")
+        embedding_model = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
+        
+        logging.info(f"Initializing ChromaDB vector store at: {CHROMA_DB_PATH}")
+        
+        # ChromaDB automatically creates and persists data locally
+        vector_store = Chroma(
+            persist_directory=CHROMA_DB_PATH,
+            embedding_function=embedding_model
+        )
+        
+        # Check if the database has already been populated to avoid duplication
+        if vector_store._collection.count() > 0:
+            logging.info("Vector store (ChromaDB) already populated. Skipping embedding.")
+            return
+
+        logging.info("Creating RAG documents from JSON files...")
+        documents = create_rag_documents()
+        
+        if documents:
+            logging.info(f"Adding {len(documents)} documents to ChromaDB. This may take a moment...")
+            vector_store.add_documents(documents, batch_size=64)
+            logging.info("ChromaDB vector store has been successfully populated and persisted.")
+        else:
+            logging.warning("No documents were generated to add to the vector store.")
+            
+    except Exception as e:
+        logging.error(f"Failed to setup vector store (ChromaDB): {e}", exc_info=True)
+        sys.exit(1)
+
 if __name__ == "__main__":
     logging.info("Starting database setup and data import script.")
     setup_database()
     import_data()
+    setup_vector_store()
     logging.info("Script execution finished.")

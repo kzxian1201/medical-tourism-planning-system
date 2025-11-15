@@ -2,11 +2,10 @@
 import sys
 import json
 import asyncio
-import nest_asyncio
 import os
 import requests
 from pydantic import ValidationError
-from typing import Optional, List, Type
+from typing import Optional, List, Type, Any
 import isoduration 
 from datetime import datetime,timedelta
 from ..logger import logging
@@ -89,11 +88,17 @@ class SearchFlightsTool(BaseTool):
             logging.error(f"An unexpected error occurred during token retrieval: {e}", exc_info=True)
             raise CustomException(sys, f"An unexpected error occurred during Amadeus token retrieval: {e}")
 
-    async def _arun(self, tool_input: SearchFlightsInput) -> SearchFlightsOutput:
+    async def _arun(self, **kwargs: Any) -> SearchFlightsOutput:
         """
         Searches for real flight details using Amadeus Flight Offers Search API.
         Applies additional filtering for unsupported API parameters.
         """
+        try:
+            tool_input = self.args_schema(**kwargs)
+        except ValidationError as e:
+            logging.error(f"Input validation failed for SearchFlightsTool: {e}", exc_info=True)
+            return SearchFlightsOutput(flight_options=[], message="Input validation failed.", error=str(e))
+        
         origin = tool_input.origin
         destination = tool_input.destination
         departure_date = tool_input.departure_date
@@ -188,7 +193,7 @@ class SearchFlightsTool(BaseTool):
                 if not offer.itineraries:
                     continue
 
-                # ✅ Apply Preferred Airlines Filter (local filtering for test consistency)
+                # Apply Preferred Airlines Filter (local filtering for test consistency)
                 if preferred_airlines:
                     offer_airlines = {seg.carrierCode for seg in offer.itineraries[0].segments}
                     if not offer_airlines.intersection(preferred_airlines):
@@ -326,30 +331,7 @@ class SearchFlightsTool(BaseTool):
         except Exception as e:
             logging.error(f"An unexpected error occurred during search_flights execution: {e}", exc_info=True)
             return SearchFlightsOutput(flight_options=[], message="Search failed.", error=f"An internal error occurred during flight search. Exception: {str(e)}")
-
-    def _run(self, tool_input: SearchFlightsInput) -> SearchFlightsOutput:
-        """
-        Synchronous wrapper for asynchronous execution, robust across environments.
-        """
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-
-        if loop.is_running():
-            nest_asyncio.apply()
-
-        coroutine = self._arun(tool_input)
-
-        try:
-            return loop.run_until_complete(coroutine)
-        except Exception as e:
-            logging.error(f"Exception occurred in _run: {e}", exc_info=True)
-            return SearchFlightsOutput(
-                flight_options=[],
-                message="Search failed.",
-                error=f"Exception during synchronous execution: {str(e)}"
-            )
-    
-    
+        
+    def _run(self, **kwargs: Any) -> Any:
+        """Synchronous run method (not recommended for this async-first tool)."""
+        raise NotImplementedError("This tool is async-first. Please use .ainvoke() or await ._arun()")

@@ -1,15 +1,14 @@
 # ai_service/src/agentic/tools/city_to_iata_code_tool.py
 import sys
 import asyncio
-import nest_asyncio
 import os
 import requests
 from pydantic import ValidationError
-from typing import Optional, List, Type
+from typing import Optional, List, Type, Any
 from ..logger import logging
 from ..exception import CustomException
 from ..models import CityToIATACodeInput, CityToIATACodeOutput, AirportInfo 
-from langchain_core.tools import BaseTool 
+from langchain_core.tools import BaseTool
 
 class CityToIATACodeTool(BaseTool):
     """
@@ -93,10 +92,16 @@ class CityToIATACodeTool(BaseTool):
             logging.error(f"An unexpected error occurred during Amadeus token fetch for CityToIATACodeTool: {e}", exc_info=True)
             raise CustomException(sys, f"Unexpected error during Amadeus token fetch for CityToIATACodeTool: {e}")
 
-    async def _arun(self, tool_input: CityToIATACodeInput) -> CityToIATACodeOutput:
+    async def _arun(self, **kwargs: Any) -> CityToIATACodeOutput:
         """
         Asynchronously converts a city name to its IATA airport code(s) using Amadeus API.
         """
+        try:
+            tool_input = self.args_schema(**kwargs)
+        except ValidationError as e:
+            logging.error(f"Input validation failed for CityToIATACodeTool: {e}", exc_info=True)
+            return CityToIATACodeOutput(airports=[], error=f"Input validation failed: {e}")
+        
         city_name = tool_input.city_name
         logging.info(f"Converting city name '{city_name}' to IATA code(s) via Amadeus API.")
 
@@ -109,7 +114,7 @@ class CityToIATACodeTool(BaseTool):
 
             params = {
                 "keyword": city_name,
-                "subType": "CITY,AIRPORT", # Search for both cities and airports
+                "subType": "AIRPORT", 
                 "view": "FULL", # Get full details
                 "page[limit]": 10 # Limit results
             }
@@ -171,19 +176,7 @@ class CityToIATACodeTool(BaseTool):
                 airports=[], 
                 error=f"An internal error occurred during IATA code lookup for '{city_name}'. Exception: {str(e)}"
             )
-
-    def _run(self, tool_input: CityToIATACodeInput) -> CityToIATACodeOutput:
-        """Synchronous wrapper for asynchronous execution with error handling."""
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-
-        if loop.is_running():
-            nest_asyncio.apply()
-
-        try:
-            return loop.run_until_complete(self._arun(tool_input))
-        except Exception as e:
-            return CityToIATACodeOutput(airports=[], error=f"Exception in _run: {str(e)}")
+        
+    def _run(self, **kwargs: Any) -> Any:
+        """Synchronous run method (not recommended for this async-first tool)."""
+        raise NotImplementedError("This tool is async-first. Please use .ainvoke() or await ._arun()")

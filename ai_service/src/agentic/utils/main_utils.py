@@ -28,7 +28,7 @@ class LoadModel:
         try:
             logging.info(f"Loading Google Gemini model: {model_name}")
             
-            llm = ChatGoogleGenerativeAI(model=model_name,temperature=temperature,max_output_tokens=1024,)
+            llm = ChatGoogleGenerativeAI(model=model_name,temperature=temperature,max_output_tokens=8192,)
             
             logging.info(f"Google Gemini model '{model_name}' loaded successfully.")
             return llm 

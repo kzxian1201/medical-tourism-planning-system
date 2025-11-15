@@ -3,7 +3,7 @@ import pytest
 import json
 from pydantic import ValidationError
 from unittest.mock import AsyncMock, patch
-from ai_service.src.agentic.tools.medical_planning_tool import MedicalPlanningTool
+from ai_service.src.agentic.agents.medical_planning_agent import MedicalPlanningTool
 from ai_service.src.agentic.models import (
     MedicalPlanningInput,
     MedicalDBSearchOutput,

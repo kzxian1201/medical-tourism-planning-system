@@ -14,6 +14,8 @@ uvicorn
 # Memory
 langgraph-checkpoint-redis
 
+langchain_chroma
+
 # tools
 python-dotenv
 requests

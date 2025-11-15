@@ -1,31 +1,29 @@
 # ai_service/src/agentic/graph/graph.py
-import os
 import json
 import sys
-import asyncio
 from typing import Literal, Optional, Any
 from langchain_core.messages import HumanMessage, AIMessage
 from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.memory import InMemorySaver
-from langgraph.checkpoint.redis import Redis, RedisSaver
+from langgraph.checkpoint.redis import RedisSaver
 from .state import AgentState
-from ..models import (MedicalPlanningInput, TravelArrangementInput, TravelLogisticsInput, CalculateBudgetInput, AgentResponse, MedicalPlanOption, FlightOptionSummary, AccommodationOption)
-from ..tools.medical_planning_tool import MedicalPlanningTool
-from ..tools.travel_arrangement_tool import TravelArrangementTool
-from ..tools.travel_logistics_tool import TravelLogisticsTool
+from ..models import (MedicalPlanningOutput, TravelArrangementOutput, TravelLogisticsOutput, CalculateBudgetInput, AgentResponse, MedicalPlanOption, FlightOptionSummary, AccommodationOption)
+from ..agents.medical_planning_agent import MedicalPlanningAgent
+from ..agents.travel_arrangement_agent import TravelArrangementAgent
+from ..agents.travel_logistics_agent import TravelLogisticsAgent
 from ..tools.calculate_budget_tool import CalculateBudgetTool
 from ..logger import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 
-# --- 1. Instantiate main tool. ---
+# --- 1. Instantiate agents and tool. ---
 # These are the "workers" of the graph, which will be called internally within the nodes.
 try:
-    medical_planner = MedicalPlanningTool()
-    travel_planner = TravelArrangementTool()
-    logistics_planner = TravelLogisticsTool()
+    medical_planner = MedicalPlanningAgent()
+    travel_planner = TravelArrangementAgent()
+    logistics_planner = TravelLogisticsAgent()
     budget_calculator = CalculateBudgetTool()
 except Exception as e:
-    logging.error(f"Failed to initialize main tools: {e}", exc_info=True)
+    logging.error(f"Failed to initialize the agents and tool: {e}", exc_info=True)
     sys.exit(1) 
 
 # --- 2. Utility functions ---
@@ -44,8 +42,13 @@ def _find_in_list_by_id(item_list: Optional[list], item_id: Optional[str]) -> Op
     """Safely search for an item in the list of objects by ID."""
     if not item_list or not item_id:
         return None
-    return next((item for item in item_list if hasattr(item, 'id') and item.id == item_id), None)
-
+    for item in item_list:
+        if isinstance(item, dict):
+            if item.get("id") == item_id:
+                return item
+        elif hasattr(item, 'id') and item.id == item_id:
+            return item
+    return None
 # --- 3. Defining the nodes of graph. ---
 # Each node is a Python function that receives an AgentState object and returns a dictionary to update the state.
 def node_start_planning(state: AgentState) -> dict:
@@ -54,7 +57,7 @@ def node_start_planning(state: AgentState) -> dict:
     Extract data from user_profile and prepare the first welcome message.
     """
     logging.info("Node: Start Planning (node_start_planning)")
-    profile = state["user_profile"]
+    profile = state.get("user_profile", {})
     
     # Extract the "Smart Start" logic 
     destination = profile.get("destination_country", "Destination not specified")
@@ -63,7 +66,8 @@ def node_start_planning(state: AgentState) -> dict:
     welcome_prompt = f"Hello! I see you're interested in traveling to {destination} for {purpose}. Is that correct?"
     
     # Add the user's initial input to the history.
-    history = state.get("chat_history", []) + [HumanMessage(content=state.get("user_input", "Start"))]
+    history = list(state.get("chat_history", []))
+    history.append(HumanMessage(content=state.get("user_input") or "Start"))
     
     return {
         "user_profile": profile,
@@ -75,26 +79,44 @@ def node_start_planning(state: AgentState) -> dict:
         "current_stage": "medical_planning_pending" # go into the next stage
     }
 
-def node_call_medical_planner(state: AgentState) -> dict:
+async def node_call_medical_planner(state: AgentState) -> dict:
     """
-    Node 2: (Phase one) Call the MedicalPlanningTool.
+    Node 2: (Phase one) Call the MedicalPlanningAgent.
     """
-    logging.info("Node: Call medical planning tool (node_call_medical_planner)")
-    profile = state["user_profile"]
-    history = state.get("chat_history", []) + [HumanMessage(content=state.get("user_input", "Please begin planning."))]
+    logging.info("Node: Call medical planning agent (node_call_medical_planner)")
+    profile = state.get("user_profile", {}) 
+    history = list(state.get("chat_history", []))
+    history.append(HumanMessage(content=state.get("user_input") or "Please begin planning."))
 
     try:
-        # Input from the AgentState build tool
-        tool_input = MedicalPlanningInput(
-            medical_purpose=profile.get("medicalPurpose"),
-            patient_nationality=profile.get("nationality"),
-            destination_country=profile.get("destination_country"),
-            estimated_budget_usd=profile.get("estimatedBudget"),
-            departure_date=profile.get("departureDate"),
-            accompanying_guests=profile.get("accompanyingGuests", 0)
-        )
+        # ensure type safety
+        estimated_budget = profile.get("estimatedBudget")
+        if isinstance(estimated_budget, (str, int, float)):
+            try:
+                estimated_budget = float(estimated_budget)
+            except ValueError:
+                estimated_budget = 0.0
+        else:
+            estimated_budget = 0.0
+
+        departure_date = profile.get("departureDate")
+        departure_date = datetime.now()
+        if isinstance(departure_date, str):
+            try:
+                departure_date = datetime.fromisoformat(departure_date)
+            except Exception:
+                logging.warning(f"Invalid date format: {departure_date}, using today instead.")
+
+        tool_input_dict = {
+            "medical_purpose": profile.get("medicalPurpose"),
+            "patient_nationality": profile.get("nationality"),
+            "destination_country": profile.get("destination_country"),
+            "estimated_budget_usd": str(estimated_budget),
+            "departure_date": departure_date.isoformat(),
+            "accompanying_guests": int(profile.get("accompanyingGuests", 0))
+        }
         
-        result = medical_planner._run(**tool_input.model_dump())
+        result: MedicalPlanningOutput = await medical_planner.ainvoke(tool_input_dict)
 
         if result.error:
             return _create_error_response(result.error, "Medical Planning")
@@ -109,7 +131,7 @@ def node_call_medical_planner(state: AgentState) -> dict:
         )
         
         return {
-            "chat_history": history + [AIMessage(content=json.dumps(agent_message.model_dump()))],
+            "chat_history": history,
             "medical_plan_options": result.medical_plan_options,
             "last_agent_message": agent_message,
             "current_stage": "medical_selection_pending" 
@@ -123,14 +145,15 @@ def node_process_medical_selection(state: AgentState) -> dict:
     """
     logging.info("Node: Handling medical choices (node_process_medical_selection)")
     selected_id = state.get("selected_medical_plan_id")
-    options = state.get("medical_plan_options")
+    options = state.get("medical_plan_options", [])
     
     selected_plan = _find_in_list_by_id(options, selected_id)
     
     if not selected_plan:
         return _create_error_response(f"The selected plan ID '{selected_id}' is invalid.", "Medical plan selection")
         
-    history = state.get("chat_history", []) + [HumanMessage(content=f"I have selected a plan: {selected_id}")]
+    history = list(state.get("chat_history", []))
+    history.append(HumanMessage(content=f"I have selected a plan: {selected_id}"))
 
     return {
         "chat_history": history,
@@ -138,42 +161,40 @@ def node_process_medical_selection(state: AgentState) -> dict:
         "current_stage": "travel_planning_pending" 
     }
 
-def node_call_travel_planner(state: AgentState) -> dict:
+async def node_call_travel_planner(state: AgentState) -> dict:
     """
-    Node 4: (Phase two) Call the TravelArrangementTool
+    Node 4: (Phase two) Call the TravelArrangementAgent
     """
-    logging.info("Node: Call travel planning (node_call_travel_planner)")
-    profile = state["user_profile"]
-    medical_plan = state["final_selected_medical_plan"]
+    logging.info("Node: Call travel planning agent (node_call_travel_planner)")
+    profile = state.get("user_profile", {})
+    medical_plan = state.get("final_selected_medical_plan")
     
-    # Safely extract data from Pydantic models
-    medical_plan_obj = MedicalPlanOption.model_validate(medical_plan)
+    if not medical_plan:
+        return _create_error_response("Medical plan not selected.", "Travel Arrangement")
     
-    # Assume the user's next input is to confirm and provide a return date
-    return_date = profile.get("returnDate") 
-    if not return_date:
-        return_date = state.get("user_input") 
+    check_in_date = profile.get("departureDate")
+    return_date = profile.get("returnDate")
 
-    if not return_date or "I choose" in return_date:
-        departure_dt = datetime.fromisoformat(profile.get("departureDate"))
-        return_date = (departure_dt + timedelta(days=10)).strftime("%Y-%m-%d")
-        logging.warning(f"Unable to determine the return date, automatically set to: {return_date}")
-    
+    if not check_in_date or not return_date:
+        error_msg = f"Missing 'departureDate' ({check_in_date}) or 'returnDate' ({return_date}) in user_profile. Cannot proceed."
+        logging.error(error_msg)
+        return _create_error_response(error_msg, "Travel Arrangement")
+        
     try:
         # Input from the AgentState build tool
-        tool_input = TravelArrangementInput(
-            departure_city=profile.get("departureCity"),
-            estimated_return_date=return_date,
-            medical_destination_city=medical_plan_obj.clinic_location.split(",")[0].strip(),
-            medical_destination_country=medical_plan_obj.clinic_location.split(",")[-1].strip(),
-            check_in_date=profile.get("departureDate"),
-            check_out_date=return_date,
-            num_guests_medical_plan=profile.get("accompanyingGuests", 0) + 1,
-            visa_information_from_medical_plan=medical_plan_obj.full_hospital_details.get("visa_information"),
-            accessibility_needs=profile.get("accessibilityNeeds", []),
-        )
+        tool_input_kwargs = {
+            "departure_city": profile.get("departureCity"),
+            "estimated_return_date": return_date, 
+            "medical_destination_city": medical_plan.clinic_location.split(",")[0].strip(),
+            "medical_destination_country": medical_plan.clinic_location.split(",")[-1].strip(),
+            "check_in_date": check_in_date, 
+            "check_out_date": return_date, 
+            "num_guests_medical_plan": profile.get("accompanyingGuests", 0) + 1,
+            "visa_information_from_medical_plan": medical_plan.full_hospital_details.get("visa_information") if hasattr(medical_plan, 'full_hospital_details') and medical_plan.full_hospital_details else None, 
+            "accessibility_needs": profile.get("accessibilityNeeds", []),
+        }
         
-        result = travel_planner._run(**tool_input.model_dump())
+        result: TravelArrangementOutput = await travel_planner.ainvoke(tool_input_kwargs)
         
         if result.error:
             return _create_error_response(result.error, "Travel Arrangement")
@@ -187,8 +208,8 @@ def node_call_travel_planner(state: AgentState) -> dict:
         )
         
         return {
-            "chat_history": state.get("chat_history", []) + [AIMessage(content=json.dumps(agent_message.model_dump()))],
-            "travel_options": result,
+            "chat_history": list(state.get("chat_history", [])), 
+            "travel_options": result, 
             "last_agent_message": agent_message,
             "current_stage": "travel_selection_pending" 
         }
@@ -200,12 +221,12 @@ def node_process_travel_selection(state: AgentState) -> dict:
     Node 5: Processing the user's travel plan selections (flights and accommodation).
     """
     logging.info("Node: Processing travel choices (node_process_travel_selection)")
-    flight_id = state.get("selected_flight_id")
-    accom_id = state.get("selected_accommodation_id")
-    options = state.get("travel_options") 
+    flight_id = state.get("selected_flight_id") 
+    accom_id = state.get("selected_accommodation_id") 
+    options: Optional[TravelArrangementOutput] = state.get("travel_options")
     
     if not options:
-         return _create_error_response("No travel options found.。", "Travel options")
+         return _create_error_response("No travel options found.", "Travel options")
 
     selected_flight = _find_in_list_by_id(options.flight_suggestions, flight_id)
     selected_accom = _find_in_list_by_id(options.accommodation_suggestions, accom_id)
@@ -213,7 +234,8 @@ def node_process_travel_selection(state: AgentState) -> dict:
     if not selected_flight or not selected_accom:
         return _create_error_response(f"The selected flight ID '{flight_id}' or accommodation ID '{accom_id}' is invalid.", "Travel options")
 
-    history = state.get("chat_history", []) + [HumanMessage(content=f"I have selected flight: {flight_id} and accommodation: {accom_id}")]
+    history = list(state.get("chat_history", []))
+    history.append(HumanMessage(content=f"I have selected flight: {flight_id} and accommodation: {accom_id}"))
     
     return {
         "chat_history": history,
@@ -222,36 +244,39 @@ def node_process_travel_selection(state: AgentState) -> dict:
         "current_stage": "logistics_planning_pending" 
     }
 
-def node_call_logistics_planner(state: AgentState) -> dict:
+async def node_call_logistics_planner(state: AgentState) -> dict:
     """
-    Node 6: (Phase three) Call the TravelLogisticsTool
+    Node 6: (Phase three) Call the TravelLogisticsAgent
     """
-    logging.info("Node: Call local logistics (node_call_logistics_planner)")
-    profile = state["user_profile"]
-    medical_plan = MedicalPlanOption.model_validate(state["final_selected_medical_plan"])
-    flight = FlightOptionSummary.model_validate(state["final_selected_flight"])
-    accom = AccommodationOption.model_validate(state["final_selected_accommodation"])
+    logging.info("Node: Call local logistics agent (node_call_logistics_planner)")
+    profile = state.get("user_profile", {}) 
+    medical_plan = state.get("final_selected_medical_plan") 
+    flight = state.get("final_selected_flight") 
+    accom = state.get("final_selected_accommodation") 
+    travel_options = state.get("travel_options") 
+    
+    if not all([profile, medical_plan, flight, accom, travel_options]):
+         return _create_error_response("Missing data from previous steps (plan, flight, accom).", "Logistics Planning")
     
     try:
-        return_date = state["travel_options"].estimated_return_date
+        return_date = profile.get("returnDate")
 
-        # Input from the AgentState build tool
-        tool_input = TravelLogisticsInput(
-            medical_purpose=medical_plan.treatment_name,
-            medical_destination_city=medical_plan.clinic_location.split(",")[0].strip(),
-            medical_destination_country=medical_plan.clinic_location.split(",")[-1].strip(),
-            medical_stay_start_date=profile.get("departureDate"),
-            medical_stay_end_date=return_date, 
-            num_guests_total=profile.get("accompanyingGuests", 0) + 1,
-            airport_pick_up_required=True, 
-            patient_accessibility_needs=profile.get("accessibilityNeeds", None)
-        )
+        tool_input_kwargs = {
+            "medical_purpose": medical_plan.treatment_name,
+            "medical_destination_city": medical_plan.clinic_location.split(",")[0].strip(),
+            "medical_destination_country": medical_plan.clinic_location.split(",")[-1].strip(),
+            "medical_stay_start_date": profile.get("departureDate"),
+            "medical_stay_end_date": return_date, 
+            "num_guests_total": profile.get("accompanyingGuests", 0) + 1,
+            "airport_pick_up_required": True, 
+            "patient_accessibility_needs": profile.get("accessibilityNeeds", None)
+        }
 
-        result = logistics_planner._run(**tool_input.model_dump())
+        result: TravelLogisticsOutput = await logistics_planner.ainvoke(tool_input_kwargs)
         
         if result.error:
             return _create_error_response(result.error, "local logistics")
-            
+        
         agent_message = AgentResponse(
             message_type="summary_cards", 
             content={
@@ -261,8 +286,8 @@ def node_call_logistics_planner(state: AgentState) -> dict:
         )
 
         return {
-            "chat_history": state.get("chat_history", []) + [AIMessage(content=json.dumps(agent_message.model_dump()))],
-            "logistics_plan": result,
+            "chat_history": list(state.get("chat_history", [])), 
+            "logistics_plan": result, 
             "final_selected_logistics": result, 
             "last_agent_message": agent_message,
             "current_stage": "budget_planning_pending" 
@@ -270,31 +295,34 @@ def node_call_logistics_planner(state: AgentState) -> dict:
     except Exception as e:
         return _create_error_response(f"An error occurred while executing the local logistics plan: {e}", "local logistics")
 
-def node_call_budget_calculator(state: AgentState) -> dict:
+async def node_call_budget_calculator(state: AgentState) -> dict:
     """
     Node 7: (Phase two) Call the CalculateBudgetTool
     """
     logging.info("Node: Call budget calculation (node_call_budget_calculator)")
     
-    # Prepare CalculateBudgetInput, which requires the entire session state.
+    travel_options = state.get("travel_options")
+    if not travel_options:
+        return _create_error_response("Missing travel options state for date calculation.", "Calculate Budget")
+
     plan_params = {
         "medical_plan": state.get("final_selected_medical_plan"),
         "flight": state.get("final_selected_flight"),
-        "accommodation": state.get("final_selected_accommodation"),
-        "local_logistics": state.get("final_selected_logistics"),
-        "check_in_date": state["user_profile"].get("departureDate"),
-        "check_out_date": state["travel_options"].estimated_return_date, 
+        "accommodation": state.get("final_selected_accommodation"), 
+        "local_logistics": state.get("final_selected_logistics"), 
+        "check_in_date": state.get("user_profile", {}).get("departureDate"), 
+        "check_out_date": travel_options.estimated_return_date, 
     }
     
-    # CalculateBudgetInput expects a 'session_state' key.
-    tool_input = CalculateBudgetInput(session_state={"plan_parameters": plan_params})
-
+    tool_input_kwargs = {"session_state": {"plan_parameters": plan_params}}
+    
     try:
-        result_str = budget_calculator._run(**tool_input.model_dump())
+        result_str = await budget_calculator.ainvoke(tool_input_kwargs)
+        
         if isinstance(result_str, str):
             result_json = json.loads(result_str)
         else:
-            result_json = result_str
+            result_json = result_str 
         
         if result_json.get("error"):
             return _create_error_response(result_json["error"], "Calculate Budget")
@@ -312,14 +340,26 @@ def node_generate_final_plan(state: AgentState) -> dict:
     """
     logging.info("Node: Generate final plan (node_generate_final_plan)")
     
+    medical_plan = state.get("final_selected_medical_plan") 
+    flight = state.get("final_selected_flight") 
+    accom = state.get("final_selected_accommodation")
+    local_logistics = state.get("final_selected_logistics") 
+
+    def safe_model_dump(model):
+        if hasattr(model, "model_dump"):
+            return model.model_dump()
+        elif isinstance(model, dict):
+            return model
+        return {}
+
     final_plan_content = {
-        "medical_plan": state.get("final_selected_medical_plan").model_dump(),
+        "medical_plan": safe_model_dump(medical_plan),
         "travel_arrangement": {
-            "flight": state.get("final_selected_flight").model_dump(),
-            "accommodation": state.get("final_selected_accommodation").model_dump(),
+            "flight": safe_model_dump(flight),
+            "accommodation": safe_model_dump(accom),
         },
-        "local_logistics": state.get("final_selected_logistics").model_dump(),
-        "total_budget": state.get("final_budget")
+        "local_logistics": safe_model_dump(local_logistics),
+        "total_budget": state.get("final_budget") 
     }
     
     agent_message = AgentResponse(
@@ -328,7 +368,7 @@ def node_generate_final_plan(state: AgentState) -> dict:
     )
     
     return {
-        "chat_history": state.get("chat_history", []) + [AIMessage(content=json.dumps(agent_message.model_dump()))],
+        "chat_history": list(state.get("chat_history", [])), 
         "last_agent_message": agent_message,
         "current_stage": "final_confirmation_pending" 
     }
@@ -349,9 +389,27 @@ def node_ask_final_confirmation(state: AgentState) -> dict:
     )
     
     return {
-        "chat_history": state.get("chat_history", []) + [AIMessage(content=json.dumps(agent_message.model_dump()))],
+        "chat_history": state.get("chat_history", []),
         "last_agent_message": agent_message,
         "current_stage": "final_confirmation_pending" 
+    }
+
+def node_finish_plan(state: AgentState) -> dict:
+    """
+    Node 10: (Final) Send a concluding message to the user.
+    This node ensures 'last_agent_message' is set before the graph ends.
+    """
+    logging.info("Node: Finish Plan (node_finish_plan)")
+    
+    agent_message = AgentResponse(
+        message_type="text",
+        content={"prompt": "Your plan is confirmed! Thank you for using our service."}
+    )
+    
+    return {
+        "chat_history": list(state.get("chat_history", [])), 
+        "last_agent_message": agent_message,
+        "current_stage": "finished" 
     }
 
 def node_handle_error(state: AgentState) -> dict:
@@ -360,6 +418,15 @@ def node_handle_error(state: AgentState) -> dict:
     """
     logging.info("Node: Error handling. (node_handle_error)")
     return {"current_stage": "error_handled"} 
+
+def node_router_junction(state: AgentState) -> dict:
+    """
+    A simple node that just passes the state through.
+    It acts as a junction point for the router logic to attach to.
+    This node MUST return a dict (even empty) to satisfy LangGraph's node requirements.
+    """
+    logging.info(f"Router Junction: Passing state with stage '{state.get('current_stage')}'") 
+    return {}
 
 # --- 4. Define Conditional Edge ---
 def router(state: AgentState) -> Literal[
@@ -379,11 +446,10 @@ def router(state: AgentState) -> Literal[
     Conditional routing node:
     Determines the next step in the graph based on `current_stage`.
     """
-    stage = state.get("current_stage", "start")
-    user_input = (state.get("user_input") or "").lower().strip()
+    stage = state.get("current_stage") or "start"  
+    user_input = (state.get("user_input") or "").lower().strip() 
     logging.info(f"Router: Current Stage = '{stage}' | User Input = '{user_input}'")
 
-    # --- handle global error / restart ---
     if "restart" in user_input:
         logging.warning("Router: User requested to restart entire plan.")
         return "node_start_planning"
@@ -393,7 +459,6 @@ def router(state: AgentState) -> Literal[
     if stage == "error_handled":
         return END
 
-    # --- stage one: medical planning ---
     if stage == "start":
         return "node_start_planning"
 
@@ -401,59 +466,53 @@ def router(state: AgentState) -> Literal[
         return "node_call_medical_planner"
 
     if stage == "medical_selection_pending":
-        # detect user edit / regeneration intent
         if any(keyword in user_input for keyword in ["edit", "change", "modify", "regenerate"]):
-            logging.info("Router: User requested to edit medical plans → re-enter medical planner.")
+            logging.info("Router: User requested to edit medical plan. Re-enter medical planner.")
             return "node_call_medical_planner"
-        elif state.get("selected_medical_plan_id"):
+        elif state.get("selected_medical_plan_id"): 
             return "node_process_medical_selection"
         else:
-            logging.warning("Router: No medical plan selected, ending flow.")
+            logging.info("Router: Awaiting user medical plan selection... INTERRUPTING.")
             return END
 
-    # --- stage two: travel planning ---
     if stage == "travel_planning_pending":
         return "node_call_travel_planner"
 
     if stage == "travel_selection_pending":
         if any(keyword in user_input for keyword in ["edit", "change", "modify", "regenerate"]):
-            logging.info("Router: User requested to edit travel plans → re-enter travel planner.")
+            logging.info("Router: User requested to edit travel plans. Re-enter travel planner.")
             return "node_call_travel_planner"
-        elif state.get("selected_flight_id") and state.get("selected_accommodation_id"):
+        elif state.get("selected_flight_id") and state.get("selected_accommodation_id"): 
             return "node_process_travel_selection"
         else:
-            logging.warning("Router: No travel plan selected, ending flow.")
+            logging.info("Router: Awaiting user travel selection... INTERRUPTING.")
             return END
 
-    # --- stage three: logistics planning ---
     if stage == "logistics_planning_pending":
         if any(keyword in user_input for keyword in ["edit", "change", "modify", "regenerate"]):
-            logging.info("Router: User requested to edit local logistics → re-enter logistics planner.")
+            logging.info("Router: User requested to edit local logistics. Re-enter logistics planner.")
             return "node_call_logistics_planner"
         return "node_call_logistics_planner"
 
-    # --- stage four: budget calculation ---
     if stage == "budget_planning_pending":
         if any(keyword in user_input for keyword in ["edit", "change", "modify", "recalculate", "adjust"]):
-            logging.info("Router: User requested to recalculate budget → rerun budget calculator.")
+            logging.info("Router: User requested to recalculate budget. Rerun budget calculator.")
         return "node_call_budget_calculator"
 
-    # --- stage five: final plan generation ---
     if stage == "final_plan_generation_pending":
         return "node_generate_final_plan"
 
     if stage == "final_confirmation_pending":
         if any(keyword in user_input for keyword in ["edit", "change", "modify", "regenerate"]):
-            logging.info("Router: User requested to modify final plan → restart from medical stage.")
+            logging.info("Router: User requested to modify final plan. Restart from medical stage.")
             return "node_call_medical_planner"
-        elif user_input in ["confirm", "yes", "ok"]:
-            logging.info("Router: User confirmed final plan → END.")
-            return END
+        elif any(keyword in user_input for keyword in ["confirm", "yes", "ok"]):
+            logging.info("Router: User confirmed final plan. Routing to node_finish_plan.")
+            return "node_finish_plan"
         else:
             logging.warning("Router: No valid confirmation received, ending flow.")
             return END
 
-    # --- fallback ---
     logging.warning(f"Router: Unrecognized stage '{stage}', ending flow.")
     return END
 
@@ -464,7 +523,6 @@ def create_graph(checkpointer: InMemorySaver | RedisSaver):
     """
     workflow = StateGraph(AgentState)
 
-    # add nodes
     workflow.add_node("node_start_planning", node_start_planning)
     workflow.add_node("node_call_medical_planner", node_call_medical_planner)
     workflow.add_node("node_process_medical_selection", node_process_medical_selection)
@@ -474,31 +532,41 @@ def create_graph(checkpointer: InMemorySaver | RedisSaver):
     workflow.add_node("node_call_budget_calculator", node_call_budget_calculator)
     workflow.add_node("node_generate_final_plan", node_generate_final_plan)
     workflow.add_node("node_ask_final_confirmation", node_ask_final_confirmation)
+    workflow.add_node("node_finish_plan", node_finish_plan)
     workflow.add_node("node_handle_error", node_handle_error)
+    workflow.add_node("router_junction", node_router_junction)
 
-    # set entry point
-    workflow.set_entry_point("node_start_planning")
+    workflow.set_entry_point("router_junction")
 
-    # add edges (keeps your existing flow)
-    workflow.add_edge("node_start_planning", "node_call_medical_planner")
-    workflow.add_edge("node_process_medical_selection", "node_call_travel_planner")
-    workflow.add_edge("node_process_travel_selection", "node_call_logistics_planner")
-    workflow.add_edge("node_call_logistics_planner", "node_call_budget_calculator")
-    workflow.add_edge("node_call_budget_calculator", "node_generate_final_plan")
-    workflow.add_edge("node_generate_final_plan", "node_ask_final_confirmation")
-    workflow.add_edge("node_handle_error", END)
+    workflow.add_edge("node_start_planning", "router_junction")
+    workflow.add_edge("node_call_medical_planner", "router_junction")
+    workflow.add_edge("node_process_medical_selection", "router_junction")
+    workflow.add_edge("node_call_travel_planner", "router_junction")
+    workflow.add_edge("node_process_travel_selection", "router_junction")
+    workflow.add_edge("node_call_logistics_planner", "router_junction")
+    workflow.add_edge("node_call_budget_calculator", "router_junction")
+    workflow.add_edge("node_generate_final_plan", "router_junction")
+    workflow.add_edge("node_ask_final_confirmation", "router_junction")
+    workflow.add_edge("node_finish_plan", END)
+    workflow.add_edge("node_handle_error", END) 
 
-    # conditional/interrupt edges (preserve your intent)
-    workflow.add_conditional_edges(
-        "node_call_medical_planner",
-        lambda s: "node_process_medical_selection" if s.get("current_stage") == "medical_selection_pending" else "node_handle_error",
-    )
-    workflow.add_conditional_edges(
-        "node_call_travel_planner",
-        lambda s: "node_process_travel_selection" if s.get("current_stage") == "travel_selection_pending" else "node_handle_error",
-    )
+    node_map = {
+        "node_start_planning": "node_start_planning",
+        "node_call_medical_planner": "node_call_medical_planner",
+        "node_process_medical_selection": "node_process_medical_selection",
+        "node_call_travel_planner": "node_call_travel_planner",
+        "node_process_travel_selection": "node_process_travel_selection",
+        "node_call_logistics_planner": "node_call_logistics_planner",
+        "node_call_budget_calculator": "node_call_budget_calculator",
+        "node_generate_final_plan": "node_generate_final_plan",
+        "node_ask_final_confirmation": "node_ask_final_confirmation",
+        "node_finish_plan": "node_finish_plan",
+        "node_handle_error": "node_handle_error",
+        "__end__": END
+    }
+    
+    workflow.add_conditional_edges("router_junction", router, node_map)
 
-    # compile; 
     try:
         app = workflow.compile(
             checkpointer=checkpointer,
@@ -517,48 +585,3 @@ def create_graph(checkpointer: InMemorySaver | RedisSaver):
 
     return app
 
-# --- 6. Local unit tests ---
-if __name__ == "__main__":
-    logging.info("--- [Graph Test] Initializing Checkpointer (main thread) ---")
-
-    async def run_test(): 
-        """
-        An independent asynchronous function used for unit testing our Graph.
-        """
-        try:
-            redis_url = os.getenv("REDIS_URL", "redis://127.0.0.1:6379")
-            redis_saver = RedisSaver.from_conn_string(redis_url) 
-            logging.info("[Graph Test] Redis checkpointer (persistent memory) connection successful.")
-            await _run_test_with(redis_saver)
-        except Exception as e:
-            logging.warning(f"[Graph Test] RedisSaver failed ({e}), fallback to InMemorySaver.")
-            memory = InMemorySaver()
-            await _run_test_with(memory)
-
-    async def _run_test_with(checkpointer):
-        logging.info("--- [Graph Test] Start unit test (inside async) ---")
-
-        test_app = create_graph(checkpointer)
-        config = {"configurable": {"thread_id": "test-session-12345"}}
-
-        inputs_step1 = {
-            "user_input": "I want to start planning",
-            "user_profile": {
-                "nationality": "Chinese",
-                "medicalPurpose": "Heart Bypass Surgery",
-                "estimatedBudget": "20000",
-                "departureCity": "Beijing",
-                "destination_country": "Malaysia",
-                "departureDate": "2025-08-01",
-                "accompanyingGuests": 1
-            },
-            "current_stage": "start"
-        }
-
-        async for event in test_app.astream(inputs_step1, config, stream_mode="values"):
-            logging.info(f"[Graph Test] Stream Event: {event.get('current_stage')}")
-
-        final_state = await test_app.aget_state(config)
-        logging.info(f"Final state: {final_state.values.keys()}")
-
-    asyncio.run(run_test())

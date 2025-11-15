@@ -18,7 +18,7 @@ from ai_service.src.agentic.logger import logging
 from ai_service.src.agentic.exception import CustomException
 from ai_service.src.agentic.graph.graph import create_graph 
 from langgraph.checkpoint.redis import RedisSaver
-from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.checkpoint.memory import MemorySaver
 from ai_service.src.agentic.models import NextStepRequest, AgentResponse, LoadSessionRequest
 from ai_service.src.agentic.graph.state import AgentState
 
@@ -49,24 +49,12 @@ async def startup_event():
     We use this to initialize the agent asynchronously.
     """
     global planning_agent_executor, redis_checkpointer
-    try:
-        logging.info("Initializing Redis Checkpointer...")
+    redis_url = os.getenv("REDIS_URL", "redis://127.0.0.1:6379")
+    redis_checkpointer = MemorySaver()
+    logging.info("Using InMemorySaver checkpointer for stability.")
 
-        redis_url = os.getenv("REDIS_URL", "redis://127.0.0.1:6379")
-        try:
-            ctx = RedisSaver.from_conn_string(redis_url)
-            redis_checkpointer = ctx.__enter__() 
-            logging.info("Redis checkpointer (persistent memory) connection successful.")
-        except Exception as e:
-            logging.warning(f"RedisSaver failed ({e}), fallback to InMemorySaver.")
-            redis_checkpointer = InMemorySaver()
-
-        logging.info("Loading LangGraph Supervisor...")
-        planning_agent_executor = create_graph(redis_checkpointer)
-        logging.info("LangGraph Supervisor loaded successfully.")
-    except Exception as e:
-        logging.error(f"Failed to load LangGraph Supervisor: {e}", exc_info=True)
-        sys.exit(1)
+    planning_agent_executor = create_graph(redis_checkpointer)
+    logging.info("LangGraph Supervisor loaded successfully.")
 
 @app.post("/api/v1/plan/next-step", response_model=AgentResponse)
 async def next_step(body: NextStepRequest):
@@ -82,48 +70,58 @@ async def next_step(body: NextStepRequest):
     logging.info(f"Processing the next step for session {session_id}")
 
     # --- 1. Define LangGraph configuration ---
-    # Implement persistence and interruption handling
     config = {
         "configurable": {
             "thread_id": f"session-{session_id}",   
             "session_id": session_id           
         }
     }
-
-    # --- 2. Prepare the input for the graph. ---
-    # Map the data received from the frontend to AgentState.
+    
+    # --- 2. Prepare inputs and invoke the agent ---
     inputs = {
         "user_input": body.user_input,
-        "user_profile": body.session_state.get("profileData", {}),
-        "selected_medical_plan_id": body.session_state.get("selected_medical_plan_id"),
-        "selected_flight_id": body.session_state.get("selected_flight_id"),
-        "selected_accommodation_id": body.session_state.get("selected_accommodation_id"),
-        "current_stage": body.session_state.get("current_stage", "start")  # ✅ ensure default
+        "current_stage": body.current_stage
     }
-
-    # --- 3. Call LangGraph ---
-    fallback_response = AgentResponse(
-        message_type="text",
-        content={"prompt": "I'm sorry, a serious error occurred. Please try again."}
-    )
     
+    is_start_of_conversation = body.current_stage == "start"
+
     try:
-        # .ainvoke() will run the graph until it encounters an END node.
-        final_state: AgentState = await planning_agent_executor.ainvoke(inputs, config)
-        
-        # Extract the response from the final state of the graph.
+        if is_start_of_conversation:
+            logging.info(f"[{session_id}] STARTING conversation.")
+            inputs["user_profile"] = body.session_state.get("profileData", {})
+            inputs["chat_history"] = [] 
+            
+            final_state = await planning_agent_executor.ainvoke(inputs, config)
+            
+        else:
+            logging.info(f"[{session_id}] UPDATING conversation state.")
+            
+            if body.session_state.get("selected_medical_plan_id"):
+                inputs["selected_medical_plan_id"] = body.session_state.get("selected_medical_plan_id")
+            if body.session_state.get("selected_flight_id"):
+                inputs["selected_flight_id"] = body.session_state.get("selected_flight_id")
+            if body.session_state.get("selected_accommodation_id"):
+                inputs["selected_accommodation_id"] = body.session_state.get("selected_accommodation_id")
+
+            planning_agent_executor.update_state(config, inputs)
+            
+            final_state = await planning_agent_executor.ainvoke(None, config)
+
+        # --- 3. Extract response ---
         agent_response = final_state.get("last_agent_message")
         
         if not agent_response:
              raise ValueError("The graph execution is complete, but 'last_agent_message' is empty.")
 
-        # Preparing the session state to be sent back.
         updated_session_state = {
             "current_stage": final_state.get("current_stage")
         }
     except (CustomException, Exception) as e:
         logging.error(f"An unexpected error occurred in the next step.: {e}", exc_info=True)
-        agent_response = fallback_response
+        agent_response = AgentResponse(
+            message_type="text",
+            content={"prompt": "I'm sorry, a serious error occurred. Please try again."}
+        )
         updated_session_state = {"current_stage": "error"}
         
     # --- 4. Return response ---
@@ -143,7 +141,7 @@ async def load_session(body: LoadSessionRequest):
          raise HTTPException(status_code=503, detail="The persistence layer (Redis Checkpointer) has not yet been initialized.")
 
     session_id = body.session_id
-    config = {"configurable": {"session_id": session_id}}
+    config = {"config": {"thread_id": f"session-{session_id}"}}
 
     try:
         # .get() retrieves the saved state directly from Redis.

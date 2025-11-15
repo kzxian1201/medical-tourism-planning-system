@@ -1,4 +1,4 @@
-# ai_service/src/agentic/tools/medical_planning_tool.py
+# ai_service/src/agentic/agents/medical_planning_agent.py
 import sys
 import json
 import asyncio
@@ -6,19 +6,17 @@ import os
 import re
 from typing import Type, Optional, Dict, Any, List
 from pathlib import Path
-from .base_async_tool import BaseAsyncTool
+from langchain_core.tools import BaseTool
 from langchain_core.prompts import ChatPromptTemplate
-from pydantic import PrivateAttr
+from pydantic import PrivateAttr, ValidationError
 from ..logger import logging
 from ..exception import CustomException
 from ..utils.main_utils import LoadModel
-from ..models import (MedicalPlanningInput, MedicalPlanningOutput, MedicalPlanOptionList, MedicalPlanOption)
-from .medical_db_search_tool import MedicalDBSearchTool
-from .medical_cost_estimator_tool import MedicalCostEstimatorTool
-from .check_visa_requirements_tool import VisaRequirementsCheckerTool
-from .web_research_tool import WebResearchTool
-from langchain_core.output_parsers import PydanticOutputParser
-from langchain_core.runnables import RunnableLambda
+from ..models import (MedicalPlanningInput, MedicalPlanningOutput, MedicalPlanningLLMOutput, MedicalPlanOption)
+from ..tools.medical_db_search_tool import MedicalDBSearchTool
+from ..tools.medical_cost_estimator_tool import MedicalCostEstimatorTool
+from ..tools.check_visa_requirements_tool import VisaRequirementsCheckerTool
+from ..tools.web_research_tool import WebResearchTool
 
 try:
     prompt_file_path = Path(__file__).parent.parent / "prompt" / "medical_planning_prompt.txt"
@@ -27,9 +25,9 @@ try:
 except FileNotFoundError as e:
     raise RuntimeError(f"Failed to load prompt file: {prompt_file_path}") from e
 
-class MedicalPlanningTool(BaseAsyncTool):
+class MedicalPlanningAgent(BaseTool):
     """
-    A high-level tool for comprehensive medical planning. It orchestrates
+    A high-level agent for comprehensive medical planning. It orchestrates
     lower-level tools and uses an internal LLM to synthesize findings into structured medical plan options.
     This version simplifies the orchestration logic to delegate all synthesis to the LLM.
     """
@@ -40,7 +38,7 @@ class MedicalPlanningTool(BaseAsyncTool):
         Input MUST be a JSON object conforming to MedicalPlanningInput schema,
         including 'medical_purpose', 'patient_nationality', 'destination_country', and other optional details.
         Example: '{"medical_purpose": "knee replacement", "patient_nationality": "Malaysian Citizen", "destination_country": "Singapore", "estimated_budget_usd": "$15000 - $25000"}'
-        The tool returns a JSON object conforming to MedicalPlanningOutput schema,
+        The agent returns a JSON object conforming to MedicalPlanningOutput schema,
         containing a list of structured medical plan options."""
     )
     args_schema: Type[MedicalPlanningInput] = MedicalPlanningInput
@@ -66,40 +64,29 @@ class MedicalPlanningTool(BaseAsyncTool):
             )
             self._web_research_tool = kwargs.get("_web_research_tool") or WebResearchTool()
 
-            logging.info("MedicalPlanningTool initialized with internal LLM and sub-tools.")
+            logging.info("MedicalPlanningAgent initialized with internal LLM and sub-tools.")
         except Exception as e:
-            logging.error("Failed to initialize MedicalPlanningTool's internal components", exc_info=True)
+            logging.error("Failed to initialize MedicalPlanningAgent's internal components", exc_info=True)
             raise CustomException(sys, e)
 
-    async def _invoke_subtool_safe(self, tool: Any, **kwargs) -> Dict[str, Any]:
+    async def _invoke_subtool_safe(self, tool: BaseTool, **kwargs) -> Dict[str, Any]:
         """
-        Safely invokes a sub-tool by correctly packaging a single Pydantic input object.
+        Safely invokes a sub-tool by passing **kwargs.
         """
         try:
-            logging.info(f"Preparing input for sub-tool: {tool.name}")
-            
-            # Use the tool's own args_schema to create the correct input model
-            tool_input_model = tool.args_schema(**kwargs)
-
-            logging.info(f"Calling sub-tool: {tool.name} with structured input.")
-            output = await tool._arun(tool_input=tool_input_model)
+            logging.info(f"Calling sub-tool: {tool.name} with kwargs.")
+            output = await tool._arun(**kwargs)
 
             # --- Normalization ---
-            # 1) Pydantic model
             if hasattr(output, "model_dump") and callable(output.model_dump):
                 return output.model_dump()
-
-            # 2) dict
             if isinstance(output, dict):
                 return output
-
-            # 3) JSON string → dict
             if isinstance(output, str):
                 try:
                     return json.loads(output)
                 except Exception:
                     return {"error": f"Tool {tool.name} returned non-JSON string", "raw": output}
-
             if hasattr(output, "dict") and callable(output.dict):
                 return output.dict()
             if hasattr(output, "json") and callable(output.json):
@@ -107,9 +94,7 @@ class MedicalPlanningTool(BaseAsyncTool):
                     return json.loads(output.json())
                 except Exception:
                     pass
-
             return {"error": f"Tool {tool.name} returned unsupported type: {type(output).__name__}"}
-
         except Exception as e:
             logging.error(f"Error invoking sub-tool {tool.name}: {str(e)}", exc_info=True)
             return {"error": f"Failed to execute tool: {tool.name}. Details: {str(e)}"}
@@ -137,11 +122,11 @@ class MedicalPlanningTool(BaseAsyncTool):
 
         return {}
     
+    @staticmethod
     def sanitize_llm_output(raw_output: str) -> List[Dict[str, Any]]:
         """
         Ensure LLM output is a valid JSON array, replacing Python-style items.
         """
-        import json
         try:
             return json.loads(raw_output)
         except Exception:
@@ -151,14 +136,16 @@ class MedicalPlanningTool(BaseAsyncTool):
             )
             fixed = re.sub(r'MedicalPlanOption\((.*?)\)', r'{\1}', fixed)
             return json.loads(fixed)
-
     
-    async def _arun(self, tool_input: Optional[MedicalPlanningInput] = None, **kwargs) -> MedicalPlanningOutput:
+    async def _arun(self, **kwargs: Any) -> MedicalPlanningOutput:
         """
         Generate structured medical plan options using sub-tools and internal LLM.
         """
-        if tool_input is None:
+        try:
             tool_input = self.args_schema(**kwargs)
+        except ValidationError as e:
+            logging.error(f"Input validation failed for MedicalPlanningAgent: {e}", exc_info=True)
+            return MedicalPlanningOutput(message="Input validation failed", error=str(e))
 
         medical_purpose = tool_input.medical_purpose
         patient_nationality = tool_input.patient_nationality
@@ -200,15 +187,11 @@ class MedicalPlanningTool(BaseAsyncTool):
         }
         
         # --- Step 2: Synthesize a simplified plan with LLM  ---
-        parser = PydanticOutputParser(pydantic_object=MedicalPlanOptionList)
+        structured_llm = self._llm.with_structured_output(MedicalPlanningLLMOutput) 
 
         structured_llm_chain = (
-            ChatPromptTemplate.from_messages([
-                ("system", MEDICAL_PLANNING_PROMPT_TEMPLATE),
-                ("human", "{llm_input}")
-            ])
-            | RunnableLambda(self._llm.ainvoke) 
-            | parser
+            ChatPromptTemplate.from_template(MEDICAL_PLANNING_PROMPT_TEMPLATE) 
+            | structured_llm
         )
 
         llm_input = {
@@ -220,60 +203,73 @@ class MedicalPlanningTool(BaseAsyncTool):
             "errors": "No errors in previous attempts."
         }
         
-        # Run LLM once 
-        validated_options_list: MedicalPlanOptionList = None
-        try:
-            validated_options_list = await structured_llm_chain.ainvoke({"llm_input": llm_input})
-        except Exception as e:
-            logging.error(f"LLM synthesis failed: {e}")
-            validated_options_list = MedicalPlanOptionList(root=[])
+        logging.info(f"--- DEBUG: LLM INPUT ---")
+        logging.info(json.dumps(llm_input, indent=2, ensure_ascii=False))
 
-        if not validated_options_list.root:
-            logging.info("Falling back to web research results...")
-            if web_results and "organic_results" in web_results and web_results["organic_results"]:
-                validated_options_list = MedicalPlanOptionList(root=[
+        llm_output: Optional[MedicalPlanningLLMOutput] = None
+        try:
+            llm_output = await structured_llm_chain.ainvoke(llm_input) 
+        except Exception as e:
+            logging.error(f"LLM synthesis failed: {e}", exc_info=True)
+            llm_output = None 
+
+        # get the list of MedicalPlanOption from the LLM output
+        generated_options_list: Optional[List[MedicalPlanOption]] = []
+        if llm_output:
+            generated_options_list = llm_output.medical_plan_options
+
+        # Check if LLM failed or returned an empty list
+        if not generated_options_list:
+            logging.warning("LLM returned None or empty list. Attempting fallback.")
+            
+            # --- Fallback Logic ---
+            if isinstance(web_results, dict) and web_results.get("organic_results"):
+                logging.info("Falling back to web research results...")
+                generated_options_list = [
                     MedicalPlanOption(
+                        id="MP_OPT_FALLBACK_001", 
                         treatment_name="Web Researched Option",
                         estimated_cost_usd="Unknown",
-                        clinic_name=web_results["organic_results"][0].get("title", "Unknown"), # <-- 现在安全了
-                        clinic_location="Unknown",
+                        clinic_name=web_results["organic_results"][0].get("title", "Unknown"), 
+                        clinic_location=destination_country, 
                         brief_description=web_results["organic_results"][0].get("snippet", ""),
                         image_url=None,
                     )
-                ])
+                ]
+            else:
+                generated_options_list = [] # Ensure it's an empty list if fallback also fails
 
         # --- Step 3: Populate full details ---
-        final_options = []
-        raw_hospital_details = hospital_results.get("data", [])
-        raw_treatment_details = treatment_results.get("data", [])
+        final_options_list = []
+        raw_hospital_details = hospital_results.get("hospital_results", [])
+        raw_treatment_details = treatment_results.get("treatment_results", [])
 
-        # fast lookup maps
         hospitals_by_name = {h.get("name"): h for h in raw_hospital_details if isinstance(h, dict)}
         treatments_by_name = {t.get("name"): t for t in raw_treatment_details if isinstance(t, dict)}
 
-        # collect subtool errors
+        for opt_model in generated_options_list:
+            opt_model.full_hospital_details = hospitals_by_name.get(opt_model.clinic_name) or {}
+            opt_model.full_treatment_details = treatments_by_name.get(opt_model.treatment_name) or {}
+            final_options_list.append(opt_model)
+
+        # --- Step 4: Manually construct the final output object ---
         subtool_errors = []
         for res in [treatment_results, hospital_results, cost_results, visa_results, web_results]:
             if "error" in res and res["error"]:
                 subtool_errors.append(res["error"])
+        error_message = "; ".join(subtool_errors) if subtool_errors else None
+        
+        final_message = "Medical planning completed successfully."
+        if not final_options_list:
+            final_message = "LLM synthesis failed, no data available."
 
-        # check each option and fill in details
-        for opt in validated_options_list.root:
-            # ensure the full details has correct type
-            opt.full_hospital_details = hospitals_by_name.get(opt.clinic_name) or {}
-            opt.full_treatment_details = treatments_by_name.get(opt.treatment_name) or {}
-            final_options.append(opt.model_dump())
-
-        # collect all subtool errors
-        error_message = None
-        if subtool_errors:
-            error_message = "; ".join(subtool_errors)
-
-        # --- Step 4: Return final structured output ---
         return MedicalPlanningOutput(
-            medical_plan_options=final_options,
-            message="Medical planning completed successfully.",
+            medical_plan_options=final_options_list,
+            message=final_message,
             error=error_message,
             visa_information=self._extract_visa_info(visa_results)
         )
-        
+    
+    def _run(self, **kwargs: Any) -> Any:
+        """Synchronous run method (not recommended for this async-first tool)."""
+        raise NotImplementedError("This tool is async-first. Please use .ainvoke() or await ._arun()")

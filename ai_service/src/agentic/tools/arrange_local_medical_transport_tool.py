@@ -1,8 +1,6 @@
 # ai_service/src/agentic/tools/arrange_local_medical_transport_tool.py
 import sys
 import json
-import asyncio
-import nest_asyncio
 import os
 from typing import Dict, Any, Optional, List, Type
 from ..logger import logging
@@ -62,10 +60,16 @@ class LocalMedicalTransportTool(BaseTool):
             logging.error(f"An unexpected error occurred while loading transport data: {e}")
             raise CustomException(sys, e)
 
-    async def _arun(self, tool_input: LocalMedicalTransportInput) -> LocalMedicalTransportOutput:
+    async def _arun(self, **kwargs: Any) -> LocalMedicalTransportOutput:
         """
         Asynchronously searches for local medical transport options from the loaded data.
         """
+        try:
+            tool_input = self.args_schema(**kwargs)
+        except ValidationError as e:
+            logging.error(f"Input validation failed for LocalMedicalTransportTool: {e}", exc_info=True)
+            return LocalMedicalTransportOutput(transport_options=[], message="Input validation failed.", error=str(e))
+        
         destination_city = tool_input.destination_city
         destination_country = tool_input.destination_country
         transport_date = tool_input.transport_date
@@ -133,27 +137,7 @@ class LocalMedicalTransportTool(BaseTool):
                 message="Search failed.",
                 error=f"Internal error during search: {str(e)}"
             )
-        
-    def _run(self, tool_input: LocalMedicalTransportInput) -> LocalMedicalTransportOutput:
-        """
-        Synchronous wrapper for async _arun() with event loop fallback.
-        """
-        try:
-            try:
-                loop = asyncio.get_event_loop()
-            except RuntimeError:
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-
-            if loop.is_running():
-                nest_asyncio.apply()
-
-            return loop.run_until_complete(self._arun(tool_input))
-
-        except Exception as e:
-            logging.error(f"Error occurred in synchronous run: {e}", exc_info=True)
-            return LocalMedicalTransportOutput(
-                transport_options=[],
-                message="Synchronous execution failed.",
-                error=f"Exception during _run(): {str(e)}"
-            )
+    
+    def _run(self, **kwargs: Any) -> Any:
+        """Synchronous run method (not recommended for this async-first tool)."""
+        raise NotImplementedError("This tool is async-first. Please use .ainvoke() or await ._arun()")

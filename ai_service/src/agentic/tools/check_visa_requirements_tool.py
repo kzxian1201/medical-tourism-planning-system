@@ -1,8 +1,6 @@
 # ai_service\src\agentic\tools\check_visa_requirements_tool.py
 import sys
 import json
-import asyncio
-import nest_asyncio
 import os
 from typing import Dict, Any, Optional, Type
 from ..logger import logging
@@ -58,11 +56,38 @@ class VisaRequirementsCheckerTool(BaseTool):
         except Exception as e:
             logging.error(f"An unexpected error occurred while loading visa rules: {e}")
             raise CustomException(sys, e)
+        
+    def _create_error_visa_info(self, notes: str) -> VisaInfo:
+        """Helper to create a default/error VisaInfo object."""
+        return VisaInfo(
+            visa_required="Unknown",
+            visa_type="Unknown",
+            stay_duration_notes="N/A",
+            processing_time_days="N/A",
+            required_documents=[],
+            notes=notes
+        )
 
-    async def _arun(self, tool_input: VisaRequirementsInput) -> VisaRequirementsOutput:
+    async def _arun(self, **kwargs: Any) -> VisaRequirementsOutput:
         """
         Asynchronously checks visa requirements based on a structured input object.
         """
+        try:
+            tool_input = self.args_schema(**kwargs)
+        except ValidationError as e:
+            logging.error(f"Input validation failed for VisaRequirementsCheckerTool: {e}", exc_info=True)
+            nationality = kwargs.get("nationality", "N/A")
+            destination_country = kwargs.get("destination_country", "N/A")
+            purpose = kwargs.get("purpose", "N/A")
+            
+            return VisaRequirementsOutput(
+                nationality=nationality,
+                destination_country=destination_country,
+                purpose=purpose,
+                visa_info=self._create_error_visa_info(f"Input validation failed: {e}"),
+                error=f"Input validation failed: {e}"
+            )
+        
         # Access fields directly from the tool_input object
         nationality = tool_input.nationality
         destination_country = tool_input.destination_country
@@ -107,14 +132,7 @@ class VisaRequirementsCheckerTool(BaseTool):
                 nationality=nationality,
                 destination_country=destination_country,
                 purpose=purpose,
-                visa_info=VisaInfo(
-                    visa_required=True,
-                    visa_type="Unknown",
-                    stay_duration_notes="N/A",
-                    processing_time_days="N/A",
-                    required_documents=[],
-                    notes=f"Error validating visa info from rules: {ve}"
-                ),
+                visa_info=self._create_error_visa_info(f"Error validating visa info from rules: {ve}"),
                 error=f"Invalid visa rule data format: {ve}"
             )
         except Exception as e:
@@ -123,87 +141,10 @@ class VisaRequirementsCheckerTool(BaseTool):
                 nationality=nationality,
                 destination_country=destination_country,
                 purpose=purpose,
-                visa_info=VisaInfo(
-                    visa_required=True,
-                    visa_type="Unknown",
-                    stay_duration_notes="N/A",
-                    processing_time_days="N/A",
-                    required_documents=[],
-                    notes=f"An internal error occurred: {e}"
-                ),
+                visa_info=self._create_error_visa_info(f"An internal error occurred: {e}"),
                 error=f"An internal error occurred: {str(e)}"
             )
-
-    def _run(self, tool_input: Any) -> VisaRequirementsOutput:
-            """
-            Synchronous wrapper for asynchronous execution.
-            Accepts dict, JSON string, or VisaRequirementsInput object.
-            Ensures robust error handling and consistent return type.
-            """
-            try:
-                # Normalize input
-                if isinstance(tool_input, str):
-                    try:
-                        tool_input = json.loads(tool_input)
-                    except json.JSONDecodeError as e:
-                        logging.error(f"Invalid JSON input to _run: {e}")
-                        return VisaRequirementsOutput(
-                            nationality="unknown",
-                            destination_country="unknown",
-                            purpose="unknown",
-                            visa_info=VisaInfo(visa_required=True, notes="Invalid JSON input"),
-                            error=f"Invalid JSON input: {e}"
-                        )
-
-                if isinstance(tool_input, dict):
-                    try:
-                        tool_input = VisaRequirementsInput(**tool_input)
-                    except ValidationError as ve:
-                        logging.error(f"Schema validation failed in _run: {ve}")
-                        return VisaRequirementsOutput(
-                            nationality=tool_input.get("nationality", "unknown"),
-                            destination_country=tool_input.get("destination_country", "unknown"),
-                            purpose=tool_input.get("purpose", "unknown"),
-                            visa_info=VisaInfo(visa_required=True, notes="Schema validation failed"),
-                            error=f"Schema validation failed: {ve}"
-                        )
-
-                if not isinstance(tool_input, VisaRequirementsInput):
-                    logging.error(f"Unexpected tool_input type: {type(tool_input)}")
-                    return VisaRequirementsOutput(
-                        nationality="unknown",
-                        destination_country="unknown",
-                        purpose="unknown",
-                        visa_info=VisaInfo(visa_required=True, notes="Unexpected tool_input type"),
-                        error=f"Unexpected tool_input type: {type(tool_input)}"
-                    )
-
-                # Ensure event loop
-                try:
-                    loop = asyncio.get_event_loop()
-                except RuntimeError:
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
-
-                if loop.is_running():
-                    nest_asyncio.apply()
-
-                coroutine = self._arun(tool_input)
-                return loop.run_until_complete(coroutine)
-
-            except Exception as e:
-                logging.error(f"VisaRequirementsCheckerTool._run encountered an error: {e}", exc_info=True)
-                return VisaRequirementsOutput(
-                    nationality="unknown",
-                    destination_country="unknown",
-                    purpose="unknown",
-                    visa_info=VisaInfo(
-                        visa_required=True,
-                        visa_type="Unknown",
-                        stay_duration_notes="N/A",
-                        processing_time_days="N/A",
-                        required_documents=[],
-                        notes=f"Unexpected error: {e}"
-                    ),
-                    error=f"Unexpected error: {e}"
-                )
+        
+    def _run(self, **kwargs: Any) -> Any:
+        """Synchronous run method (not recommended for this async-first tool)."""
+        raise NotImplementedError("This tool is async-first. Please use .ainvoke() or await ._arun()")

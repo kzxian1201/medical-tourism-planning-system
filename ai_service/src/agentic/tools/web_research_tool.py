@@ -1,9 +1,8 @@
 # ai_service/src/agentic/tools/web_research_tool.py
 import sys
-import asyncio
 import os
 from typing import Dict, Any, Optional, Type
-from langchain_community.utilities.google_serper import GoogleSerperAPIWrapper
+from langchain_community.utilities import GoogleSerperAPIWrapper
 from langchain_core.tools import BaseTool
 from pydantic import ValidationError, PrivateAttr
 from ..logger import logging
@@ -42,10 +41,19 @@ class WebResearchTool(BaseTool):
             logging.error(f"Failed to initialize WebResearchTool: {e}", exc_info=True)
             raise CustomException(sys, e)
 
-    async def _arun(self, tool_input: WebResearchToolInput) -> WebSearchRawResults:
+    async def _arun(self, **kwargs: Any) -> WebSearchRawResults:
         """
         Performs a web search using the Serper API based on a structured Pydantic input.
         """
+        try:
+            tool_input = self.args_schema(**kwargs)
+        except ValidationError as e:
+            logging.error(f"Input validation failed for WebResearchTool: {e}", exc_info=True)
+            return WebSearchRawResults(
+                search_parameters={"query": str(kwargs)},
+                error=f"Input validation failed: {e}"
+            )
+        
         logging.info(f"Executing web search for query: '{tool_input.query}'.")
 
         raw_search_results_dict: Dict[str, Any] = {}
@@ -108,11 +116,7 @@ class WebResearchTool(BaseTool):
                 search_parameters={"query": tool_input.query},
                 error=f"An internal error occurred during web search for '{tool_input.query}'. Exception: {str(e)}"
             )
-
-    def _run(self, tool_input: WebResearchToolInput) -> WebSearchRawResults:
-        """Synchronous wrapper for asynchronous execution."""
-        try:
-            return asyncio.run(self._arun(tool_input))
-        except RuntimeError as e:
-            loop = asyncio.get_event_loop()
-            return loop.run_until_complete(self._arun(tool_input))
+        
+    def _run(self, **kwargs: Any) -> Any:
+        """Synchronous run method (not recommended for this async-first tool)."""
+        raise NotImplementedError("This tool is async-first. Please use .ainvoke() or await ._arun()")

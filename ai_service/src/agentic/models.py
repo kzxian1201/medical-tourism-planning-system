@@ -247,25 +247,12 @@ class VisaRequirementsInput(BaseModel):
 
 class VisaInfo(BaseModel):
     """Details of visa requirements, matching the visa_rules.json structure."""
-    visa_required: Union[bool, str] = Field(..., description="Is a visa required? Boolean or 'Consult Embassy'.")
+    visa_required: Optional[str] = Field(..., description="Is a visa required? e.g., 'Yes', 'No', 'Consult Embassy'.")
     visa_type: Optional[str] = Field(..., description="Type of visa required (e.g., 'eVisa', 'Visa-Free', 'Medical Visa').")
     stay_duration_notes: Optional[str] = Field(..., description="Notes on maximum duration of stay.")
     required_documents: List[str] = Field(default_factory=list, description="List of required documents.")
-    processing_time_days: Optional[Union[str, int]] = Field(..., description="Estimated processing time in days or 'N/A'.")
+    processing_time_days: Optional[str] = Field(..., description="Estimated processing time in days or 'N/A'.")
     notes: Optional[str] = Field(..., description="Additional notes or instructions.")
-
-    @field_validator('visa_required', mode='before') 
-    @classmethod
-    def convert_visa_required_to_bool_or_string(cls, v):
-        """Converts 'Yes'/'No' strings to boolean True/False, keeps 'Consult Embassy' as string."""
-        if isinstance(v, str):
-            if v.lower() == 'yes':
-                return True
-            elif v.lower() == 'no':
-                return False
-            elif v.lower() == 'consult embassy':
-                return "Consult Embassy"
-        return v 
 
 class VisaRequirementsOutput(BaseModel):
     """Output schema for VisaRequirementsCheckerTool."""
@@ -441,10 +428,10 @@ class FlightSegmentSummary(BaseModel):
 class FlightOptionSummary(BaseModel):
     """Summarized flight option for user presentation."""
     id: str = Field(..., description="Unique identifier for the flight option, e.g., 'FLIGHT_A_1'.")
-    total_cost: Union[int, str] = Field(..., description="Total estimated cost of the flight, including currency.")
+    total_cost: str = Field(..., description="Total estimated cost of the flight, including currency.")
     currency: str = Field(..., description="Currency of the total cost (e.g., 'USD', 'EUR').")
     duration: str = Field(..., description="Total flight duration (e.g., 'PT10H30M').")
-    layovers: Union[int, List[dict]] = Field(..., description="Total number of layovers for the entire itinerary.")
+    layovers_description: str = Field(..., description="Total number of layovers for the entire itinerary.")
     segments: List[FlightSegmentSummary] = Field(..., description="Summarized details of each flight segment.")
     airline_names: str = Field(..., description="Comma-separated list of airline names involved.")
     segments_summary: str = Field(..., description="A concise summary of the flight segments (e.g., 'KUL-SIN (direct)').")
@@ -569,7 +556,7 @@ class AccommodationOption(BaseModel):
     city: str = Field(..., description="City where the accommodation is located.")
     min_cost_per_night_usd: float = Field(..., description="Minimum estimated cost per night in USD.") 
     max_cost_per_night_usd: float = Field(..., description="Maximum estimated cost per night in USD.") 
-    total_cost_estimate_usd: Union[int, str] = Field(..., description="Estimated total cost for the stay in USD.")
+    total_cost_estimate_usd: str = Field(..., description="Estimated total cost for the stay in USD.")
     accessibility_features: List[str] = Field(default_factory=list, description="Detailed accessibility features (e.g., 'Roll-in shower', 'grab bars', 'wide doorways').")
     availability: str = Field(..., description="Availability notes (e.g., 'Available for specified dates').")
     contact_info: Optional[str] = Field(None, description="Contact information for booking.")
@@ -632,7 +619,7 @@ class LocalMedicalTransportOutput(BaseModel):
     message: str = Field("Search completed.", description="A message indicating the search status.")
     error: Optional[str] = Field(None, description="Error message if the search failed.")
 
-# --- Medical Planning Tool Models ---
+# --- Medical Planning Agent Models ---
 class MedicalPlanningInput(BaseModel):
     """Input schema for MedicalPlanningTool."""
     medical_purpose: str = Field(..., description="The medical condition or procedure the user is seeking treatment for.")
@@ -647,7 +634,7 @@ class MedicalPlanningInput(BaseModel):
 
 class MedicalPlanOption(BaseModel):
     """Represents a single medical plan option proposed by the MedicalPlanningTool."""
-    id: Optional[str] = Field(default_factory=lambda: str(uuid4()), description="Unique identifier for the medical plan option.")  
+    id: Optional[str] = Field(None, description="Unique identifier for the medical plan option, e.g., 'MP_OPT_001'.")
     treatment_name: Optional[str] = Field("N/A", description="Name of the medical treatment or procedure.")
     estimated_cost_usd: Optional[str] = Field("N/A", description="Estimated total cost of the treatment in USD.")
     clinic_name: Optional[str] = Field("N/A", description="Name of the recommended clinic/hospital.")
@@ -665,10 +652,14 @@ class MedicalPlanningOutput(BaseModel):
     error: Optional[str] = Field(None, description="Error message if medical planning failed or is incomplete.")
     visa_information: Optional[VisaInfo] = Field(None, description="Detailed visa information based on nationality and destination.")
 
-class MedicalPlanOptionList(RootModel[List[MedicalPlanOption]]):
-    pass
+class MedicalPlanningLLMOutput(BaseModel):
+    """
+    A standard BaseModel to wrap the list of medical plan options.
+    This is a more stable target for the LLM's with_structured_output.
+    """
+    medical_plan_options: List[MedicalPlanOption] = Field(default_factory=list, description="A list of synthesized medical plan options based on the prompt.")
 
-# --- Travel Arrangement Tool Models ---
+# --- Travel Arrangement Agent Models ---
 class TravelArrangementInput(BaseModel):
     """Input schema for TravelArrangementTool."""
     departure_city: str = Field(..., description="The user's departure city.")
@@ -712,7 +703,15 @@ class TravelArrangementOutput(BaseModel):
     message: str = Field("Travel arrangements planned.", description="A message indicating the planning status.")
     error: Optional[str] = Field(None, description="Error message if travel arrangement failed.")
     
-# --- Travel Logistics Tool Models  ---
+class TravelArrangementLLMOutput(BaseModel):
+    """
+    A simplified model for the LLM to output ONLY the synthesized lists.
+    Python code will handle assembly of weather, visa, and error fields.
+    """
+    flight_suggestions: List[FlightOptionSummary] = Field(default_factory=list, description="List of synthesized flight suggestions based on user preferences.")
+    accommodation_suggestions: List[AccommodationOption] = Field(default_factory=list, description="List of synthesized accommodation suggestions based on user preferences.")
+
+# --- Travel Logistics Agent Models  ---
 class TravelLogisticsInput(BaseModel):
     """Input schema for TravelLogisticsTool."""
     medical_purpose: Optional[str] = Field(None, description="The patient's medical purpose for the trip (e.g., surgery, rehabilitation, general check-up).")
@@ -741,6 +740,16 @@ class TravelLogisticsOutput(BaseModel):
     message: str = Field("Travel logistics planned.", description="A message indicating the status of the overall logistics process.")
     error: Optional[str] = Field(None, description="Error message if travel logistics planning failed or are incomplete.")
 
+class TravelLogisticsLLMOutput(BaseModel):
+    """
+    A simplified model for the LLM to output ONLY the synthesized web search results.
+    Python code will handle assembly of structured transport data, status, and errors.
+    """
+    additional_local_services_suggestions: Optional[List[Dict[str, Any]]] = Field(default_factory=list, description="Suggestions for additional local services (e.g., interpreters, nursing care).")
+    dietary_recommendations: Optional[List[Dict[str, Any]]] = Field(default_factory=list, description="Recommendations based on dietary needs (e.g., restaurants, grocery stores).")
+    sim_card_assistance_info: Optional[Dict[str, Any]] = Field(None, description="Information regarding local SIM card assistance (e.g., providers, where to buy).")
+    leisure_activity_suggestions: Optional[List[Dict[str, Any]]] = Field(default_factory=list, description="Suggestions for leisure activities or sightseeing.")
+    
 # --- Update Session State Tool Models ---
 class UpdateSessionStateInput(BaseModel):
     """Input schema for the UpdateSessionStateTool."""

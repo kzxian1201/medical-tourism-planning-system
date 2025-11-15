@@ -1,9 +1,9 @@
 # ai_service/src/agentic/tools/calculate_budget_tool.py
 import json
 import logging
-from typing import Type
+from typing import Type, Any
 from langchain_core.tools import BaseTool
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from datetime import datetime
 from ai_service.src.agentic.models import CalculateBudgetInput
 
@@ -21,20 +21,21 @@ class CalculateBudgetTool(BaseTool):
     description: str = "Use this tool to calculate the total estimated budget for the plan. It requires the entire `session_state` as input to access all costs (medical, flight, accommodation, etc.)."
     args_schema: Type[BaseModel] = CalculateBudgetInput
 
-    def _run(self, **kwargs) -> str:
-        """
-        Synchronous run method to calculate the total budget.
-        """
+    async def _arun(self, **kwargs: Any) -> str:
         logger.info("CalculateBudgetTool called.")
         
         try:
-            if "session_state" in kwargs:
-                session_state = kwargs.get("session_state", {})
-            elif "tool_input" in kwargs and isinstance(kwargs["tool_input"], CalculateBudgetInput):
-                session_state = kwargs["tool_input"].session_state
-            else:
-                session_state = {}
-
+            tool_input = self.args_schema(**kwargs)
+        except ValidationError as e:
+            logger.error(f"Input validation failed for CalculateBudgetTool: {e}", exc_info=True)
+            return json.dumps({
+                "total_estimated_budget_usd": 0,
+                "error": f"Input validation failed: {e}"
+            })
+        
+        try:
+            session_state = tool_input.session_state
+            
             plan_params = session_state.get("plan_parameters", {})
             
             # Extract costs from the session state
@@ -94,6 +95,7 @@ class CalculateBudgetTool(BaseTool):
                 "total_estimated_budget_usd": 0,
                 "error": f"Failed to calculate budget due to missing or invalid data: {str(e)}"
             })
-
-    async def _arun(self, tool_input: CalculateBudgetInput) -> str:
-        return self._run(session_state=tool_input.session_state)
+        
+    def _run(self, **kwargs: Any) -> Any:
+        """Synchronous run method (not recommended for this async-first tool)."""
+        raise NotImplementedError("This tool is async-first. Please use .ainvoke() or await ._arun()")
