@@ -1,13 +1,12 @@
 # src/agentic/callbacks.py
 import json
-import asyncio 
+import asyncio
 from typing import Any, Dict, List, Union, Optional
 from uuid import UUID
 
 from langchain_core.callbacks import BaseCallbackHandler
-from langchain_core.messages import BaseMessage
 from langchain_core.outputs import LLMResult, GenerationChunk
-from langchain_core.agents import AgentAction, AgentFinish 
+from langchain_core.agents import AgentAction, AgentFinish
 
 # This handler will be used to stream agent progress back to the client via SSE
 class StreamingCallbackHandler(BaseCallbackHandler):
