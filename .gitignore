@@ -164,4 +164,6 @@ venv/*
 .env.example.sh
 
 # Local environment variables
-.env.local
+.env.local"ai_service/src/db/medical_knowledge.db" 
+"ai_service/test/test_report.json" 
+".langgraph_api/" 
