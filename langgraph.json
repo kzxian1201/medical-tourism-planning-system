@@ -1,0 +1,20 @@
+{
+    "dependencies": ["."],
+    "graphs": {
+        "medijourney_architect": "./ai_service/src/agentic/graph/server.py:studio_graph"
+    },
+    "env": ".env",
+    "watch": {
+        "ignore": [
+            "**/log/**",
+            "**/data/**",
+            "**/db/**",
+            "**/*.log",
+            "**/*.db",
+            "**/*.json",
+            "**/*.tmp",
+            "**/__pycache__/**",
+            "**/*.pyc"
+        ]
+    }
+}

@@ -1,37 +1,92 @@
 # ai_service/src/agentic/graph/state.py
-from typing import List, Dict, Any
-from typing_extensions import TypedDict, NotRequired
+from typing import Annotated, List, Optional, Dict, Any
+from typing_extensions import TypedDict
 from langchain_core.messages import BaseMessage
-from ..models import (MedicalPlanOption, TravelArrangementOutput, TravelLogisticsOutput, FlightOptionSummary, AccommodationOption, AgentResponse)
+from langgraph.graph.message import add_messages
+from ..models import UserProfile, MedicalPlanOption, TravelArrangementOutput, TravelLogisticsOutput, FlightOptionSummary, AccommodationOption, FinalProposal
+from operator import add
+
+def merge_user_profile(old_profile: Optional[UserProfile], new_profile_updates: Any) -> Optional[UserProfile]:
+    """
+    When new user preferences are passed in, they are merged into the existing user_profile.
+    """
+    # If there were no previous portraits, simply treat the new ones as the entirety.
+    if not old_profile:
+        return new_profile_updates if isinstance(new_profile_updates, UserProfile) else old_profile
+        
+    # If there were no new updates passed in, keep the original profile.
+    if not new_profile_updates:
+        return old_profile
+        
+    if isinstance(old_profile, dict):
+        merged_data = old_profile.copy()
+    else:
+        merged_data = old_profile.model_dump()
+    
+    # assume that the updates we pass in is also a dictionary (or an object with preferences).
+    if isinstance(new_profile_updates, dict):
+        updates = new_profile_updates
+    else:
+        updates = new_profile_updates.model_dump(exclude_unset=True)
+
+    # Merging logic: Append the newly extracted dietary_needs
+    if "preferences" in updates:
+        new_prefs = updates["preferences"]
+        old_prefs = merged_data.get("preferences", {})
+        
+        if "dietary_needs" in new_prefs:
+            combined = old_prefs.get("dietary_needs", []) + new_prefs["dietary_needs"]
+            old_prefs["dietary_needs"] = list(set(combined))
+            
+        if "accessibility_needs" in new_prefs:
+            combined = old_prefs.get("accessibility_needs", []) + new_prefs["accessibility_needs"]
+            old_prefs["accessibility_needs"] = list(set(combined))
+            
+        merged_data["preferences"] = old_prefs
+
+    return UserProfile(**merged_data)
 
 class AgentState(TypedDict):
     """
-    Defines the central state (or "context") of agent.
-    This dictionary will be passed, checked, and updated at each step of the graph.
-    This follows the core idea of ​​Thinking in LangGraph.
-    """ 
-    # --- 1. Session and user input ---
-    chat_history: NotRequired[List[BaseMessage]]
-    user_input: NotRequired[str]
-    user_profile: NotRequired[Dict[str, Any]]
+    [Global Context] - LangChain 1.0+ Standard TypedDict State.
+    """
+    # Session & User
+    messages: Annotated[List[BaseMessage], add_messages]
+    user_input: str
+    
+    # Binding Reducer
+    user_profile: Annotated[Optional[UserProfile], merge_user_profile]
+    
+    # Curation Queue
+    data_update_queue: Annotated[List[Dict[str, Any]], add]
 
-    # --- 2. Phased outputs ---
-    medical_plan_options: NotRequired[List[MedicalPlanOption]]
-    travel_options: NotRequired[TravelArrangementOutput]
-    logistics_plan: NotRequired[TravelLogisticsOutput]
-    final_budget: NotRequired[Dict[str, Any]]
+    # Department Outputs
+    medical_plan_options: List[MedicalPlanOption]
+    final_selected_medical_plan: Optional[MedicalPlanOption]
+    
+    travel_options: Optional[TravelArrangementOutput]
+    final_selected_flight: Optional[FlightOptionSummary]
+    final_selected_accommodation: Optional[AccommodationOption]
 
-    # --- 3. The user's final choice ---
-    selected_medical_plan_id: NotRequired[str]
-    selected_flight_id: NotRequired[str]
-    selected_accommodation_id: NotRequired[str]
+    weather_info: Optional[Any]
+    
+    logistics_plan: Optional[TravelLogisticsOutput]
+    
+    # Final Result
+    final_proposal: Optional[FinalProposal]
+    
+    # Control Flow & Error Handling
+    current_stage: str
+    error_message: Optional[str]
+    status: str # "active", "blocked", "completed", "error"
 
-    # --- 4. finalize the plan ---
-    final_selected_medical_plan: NotRequired[MedicalPlanOption]
-    final_selected_flight: NotRequired[FlightOptionSummary]
-    final_selected_accommodation: NotRequired[AccommodationOption]
-
-    # --- 5. Process control and output ---
-    current_stage: NotRequired[str]
-    last_agent_message: NotRequired[AgentResponse]
-    error_message: NotRequired[str]
+class GraphConfig(TypedDict):
+    """
+    [Runtime Configuration]
+    These parameters can be passed at runtime via `configurable`.
+    """
+    user_id: str
+    thread_id: str
+    llm_model_name: str
+    max_retries: int
+    require_human_approval: bool
