@@ -1,337 +1,116 @@
 # ai_service/src/agentic/tools/search_flights_tool.py
-import sys
-import json
 import asyncio
-import os
 import requests
-from pydantic import ValidationError
-from typing import Optional, List, Type, Any
-import isoduration 
-from datetime import datetime,timedelta
+from typing import List
+from langchain_core.tools import tool
 from ..logger import logging
-from ..exception import CustomException
-from ..models import (SearchFlightsInput, SearchFlightsOutput, FlightOptionSummary, FlightSegmentSummary,AmadeusFlightSearchResponse)
-from langchain_core.tools import BaseTool
+from datetime import datetime
+from ..models import SearchFlightsInput, SearchFlightsOutput, FlightOptionSummary, DataProvenance
+from ..config import AppConfig
 
-class SearchFlightsTool(BaseTool):
-    """
-    A tool to search for real flight details using the Amadeus Flight Offers Search API.
-    It handles authentication and expects structured Pydantic input, returning structured Pydantic output.
-    """
-    name: str = "search_flights"
-    description: str = (
-        """Useful for searching for flight details between specified origins, destinations, and dates using Amadeus API.
-        Input MUST be a JSON object conforming to SearchFlightsInput schema.
-        Required fields: 'origin' (string, IATA airport code, e.g., "KUL"),
-        'destination' (string, IATA airport code, e.g., "SIN"), and 'departure_date' (string, YYYY-MM-DD).
-        Optional fields: 'return_date' (string, YYYY-MM-DD), 'adults' (integer, default 1),
-        'children' (integer), 'infants' (integer), 'travel_class' (string, e.g., "ECONOMY", "BUSINESS", "FIRST"),
-        'max_results' (integer, default 5), 'non_stop' (boolean), 'currency_code' (string, e.g., "USD"),
-        'preferred_airlines' (list of strings, IATA codes, e.g., ["MH", "SQ"]),
-        'max_layover_duration' (string, ISO 8601 duration, e.g., "PT3H" for 3 hours),
-        'earliest_departure_time' (string, HH:MM, e.g., "08:00"),
-        'latest_arrival_time' (string, HH:MM, e.g., "18:00").
-        The tool returns a JSON object conforming to SearchFlightsOutput schema, containing a list of FlightOptionSummary.
-        """
-    )
-    args_schema: Type[SearchFlightsInput] = SearchFlightsInput
+def _build_skyscanner_params(origin: str, dest: str, date: str, adults: int, kwargs: dict) -> dict:
+    """Build Skyscanner API request parameters"""
+    return {
+        "placeIdFrom": f"{origin}-sky",
+        "placeIdTo": f"{dest}-sky",
+        "departDate": date,
+        "adults": str(adults),
+        "cabinClass": kwargs.get("travel_class", "ECONOMY") or "ECONOMY",
+        "currency": kwargs.get("currency_code", "USD") or "USD"
+    }
 
-    _AMADEUS_API_KEY: Optional[str] = None
-    _AMADEUS_API_SECRET: Optional[str] = None
-    _AMADEUS_ACCESS_TOKEN: Optional[str] = None
-    _TOKEN_EXPIRY_TIME: Optional[datetime] = None
+async def _fetch_skyscanner_data(params: dict, headers: dict) -> dict:
+    """Fetch Skyscanner flight API data"""
+    base_url = "https://sky-scanner3.p.rapidapi.com/web/flights/search-one-way"
+    poll_url = "https://sky-scanner3.p.rapidapi.com/web/flights/search-incomplete"
+    
+    response = await asyncio.to_thread(requests.get, base_url, headers=headers, params=params, timeout=15)
+    res_data = response.json()
 
-    # Constants for Amadeus API
-    AMADEUS_TOKEN_URL: str = "https://test.api.amadeus.com/v1/security/oauth2/token" # Use test environment
-    AMADEUS_FLIGHT_SEARCH_URL: str = "https://test.api.amadeus.com/v2/shopping/flight-offers" # Use test environment
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self._AMADEUS_API_KEY = os.getenv("AMADEUS_API_KEY")
-        self._AMADEUS_API_SECRET = os.getenv("AMADEUS_API_SECRET")
-        if not self._AMADEUS_API_KEY or not self._AMADEUS_API_SECRET:
-            logging.error("AMADEUS_API_KEY or AMADEUS_API_SECRET not set in environment variables.")
-            raise CustomException(sys, "Amadeus API credentials are not set.")
-
-    async def _get_amadeus_access_token(self) -> str:
-        """Retrieves or refreshes the Amadeus access token."""
-        if self._AMADEUS_ACCESS_TOKEN and self._TOKEN_EXPIRY_TIME and datetime.now() < self._TOKEN_EXPIRY_TIME:
-            return self._AMADEUS_ACCESS_TOKEN
-
-        logging.info("Attempting to retrieve new Amadeus access token.")
-        try:
-            headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-            data = {
-                'grant_type': 'client_credentials',
-                'client_id': self._AMADEUS_API_KEY,
-                'client_secret': self._AMADEUS_API_SECRET
-            }
-            loop = asyncio.get_event_loop()
-            response = await loop.run_in_executor(
-                None, # Use the default thread pool executor
-                lambda: requests.post(self.AMADEUS_TOKEN_URL, headers=headers, data=data, timeout=10)
-            )
-            response.raise_for_status() # Raise an HTTPError for bad responses 
-            token_data = response.json()
-            self._AMADEUS_ACCESS_TOKEN = token_data['access_token']
-            # Set expiry time a bit before actual expiry for buffer
-            self._TOKEN_EXPIRY_TIME = datetime.now() + timedelta(seconds=token_data['expires_in'] - 60)
-            logging.info("Successfully retrieved new Amadeus access token.")
-            return self._AMADEUS_ACCESS_TOKEN
-        except requests.exceptions.RequestException as e:
-            logging.error(f"Failed to retrieve Amadeus access token: {e}", exc_info=True)
-            raise CustomException(sys, f"Failed to retrieve Amadeus access token: {e}")
-        except KeyError as e:
-            logging.error(f"Amadeus token response missing key: {e}. Response: {response.text}", exc_info=True)
-            raise CustomException(sys, f"Invalid Amadeus token response format: {e}")
-        except Exception as e:
-            logging.error(f"An unexpected error occurred during token retrieval: {e}", exc_info=True)
-            raise CustomException(sys, f"An unexpected error occurred during Amadeus token retrieval: {e}")
-
-    async def _arun(self, **kwargs: Any) -> SearchFlightsOutput:
-        """
-        Searches for real flight details using Amadeus Flight Offers Search API.
-        Applies additional filtering for unsupported API parameters.
-        """
-        try:
-            tool_input = self.args_schema(**kwargs)
-        except ValidationError as e:
-            logging.error(f"Input validation failed for SearchFlightsTool: {e}", exc_info=True)
-            return SearchFlightsOutput(flight_options=[], message="Input validation failed.", error=str(e))
+    if res_data.get("data", {}).get("context", {}).get("status") == "incomplete":
+        session_id = res_data["data"]["context"].get("sessionId")
+        await asyncio.sleep(2)
+        poll_res = await asyncio.to_thread(requests.get, poll_url, headers=headers, params={"sessionId": session_id})
+        res_data = poll_res.json()
         
-        origin = tool_input.origin
-        destination = tool_input.destination
-        departure_date = tool_input.departure_date
-        return_date = tool_input.return_date
-        adults = tool_input.adults
-        children = tool_input.children
-        infants = tool_input.infants
-        travel_class = tool_input.travel_class
-        max_results = tool_input.max_results
-        non_stop = tool_input.non_stop
-        currency_code = tool_input.currency_code
-        preferred_airlines = tool_input.preferred_airlines
-        max_layover_duration = tool_input.max_layover_duration
-        earliest_departure_time = tool_input.earliest_departure_time
-        latest_arrival_time = tool_input.latest_arrival_time
+    return res_data
 
-        logging.info(f"Executing real flight search for: {origin} to {destination} on {departure_date}.")
+def _parse_skyscanner_results(res_data: dict, max_results: int, origin: str, dest: str, currency: str) -> List[FlightOptionSummary]:
+    """Parse Skyscanner API response to extract flight options"""
+    itineraries = res_data.get("data", {}).get("itineraries", {}).get("results", [])
+    parsed_options = []
+    
+    for item in itineraries[:max_results]:
+        raw_price = item.get("price", {}).get("raw", 500)
+        leg = item.get("legs", [{}])[0]
+        stop_count = leg.get("stopCount", 0)
+        stops_str = "Direct" if stop_count == 0 else f"{stop_count} stops"
+        carrier = leg.get("carriers", {}).get("marketing", [{}])[0].get("name", "Unknown Airline")
+        
+        parsed_options.append(FlightOptionSummary(
+            id=f"FLIGHT_{item.get('id')}",
+            total_cost=f"{raw_price:.2f}",
+            currency=currency,
+            duration=f"{leg.get('durationInMinutes', 0)}m",
+            airline_names=carrier,
+            layovers_description=stops_str,
+            segments=[],
+            segments_summary=f"{origin}-{dest} ({stops_str})",
+            provenance=DataProvenance(source="Skyscanner Live", is_mock_data=False)
+        ))
+    return parsed_options
 
+def create_search_flights_tool(config: AppConfig):
+    """[Factory] Creates the Flight Search Tool using Skyscanner API via RapidAPI."""
+
+    @tool("search_flights_tool", args_schema=SearchFlightsInput)
+    async def search_flights(origin: str, destination: str, departure_date: str, adults: int = 1, **kwargs) -> SearchFlightsOutput:
+        """Search for real-time flights using Skyscanner's engine."""
+        logging.info(f"✈️ Flight Search: {origin}->{destination} on {departure_date} for {adults} pax (Env: {config.environment})")
+        
+        # Check for airline schedule horizon (typically 330 days)
         try:
-            access_token = await self._get_amadeus_access_token()
-            headers = {
-                "Authorization": f"Bearer {access_token}",
-                "Content-Type": "application/json"
-            }
-
-            params = {
-                "originLocationCode": origin,
-                "destinationLocationCode": destination,
-                "departureDate": departure_date,
-                "returnDate": return_date,
-                "adults": adults,
-                "children": children,
-                "infants": infants,
-                "travelClass": travel_class.upper() if travel_class else "ECONOMY",
-                "max": max_results, 
-                "nonStop": non_stop,
-                "currencyCode": currency_code
-            }
-
-            # --- Add new preference parameter to Amadeus API requests ---
-            if preferred_airlines:
-                # Amadeus API uses 'includedAirlineCodes' for preferred airlines
-                params["includedAirlineCodes"] = ",".join(preferred_airlines)
-                logging.info(f"Including preferred airlines: {preferred_airlines}")
-
-            params = {k: v for k, v in params.items() if v is not None} # Remove None values
-
-            loop = asyncio.get_event_loop()
-            response = await loop.run_in_executor(
-                None, # Use the default thread pool executor
-                lambda: requests.get(self.AMADEUS_FLIGHT_SEARCH_URL, headers=headers, params=params, timeout=30)
-            )
-            response.raise_for_status()
-
-            json_data = response.json()
-            parsed_amadeus_response = AmadeusFlightSearchResponse(**json_data)
-
-            flight_options_summary: List[FlightOptionSummary] = []
-
-            # --- Post-processing filtering logic ---
-            # Parse max_layover_duration if provided
-            max_layover_seconds = None
-            if max_layover_duration:
-                try:
-                    max_layover_timedelta = isoduration.parse_duration(max_layover_duration)
-                    max_layover_seconds = max_layover_timedelta.total_seconds()
-                    logging.info(f"Parsed max_layover_duration to {max_layover_seconds} seconds.")
-                except Exception as e:
-                    logging.warning(f"Could not parse max_layover_duration '{max_layover_duration}': {e}. This filter will not be applied.", exc_info=True)
-                    max_layover_seconds = None
-
-            # Prepare for time filtering
-            earliest_dep_minutes = None
-            if earliest_departure_time:
-                try:
-                    h, m = map(int, earliest_departure_time.split(':'))
-                    earliest_dep_minutes = h * 60 + m
-                except ValueError as ve:
-                    logging.warning(f"Invalid earliest_departure_time format '{earliest_departure_time}': {ve}. This filter will not be applied.")
-                    earliest_dep_minutes = None
-
-            latest_arr_minutes = None
-            if latest_arrival_time:
-                try:
-                    h, m = map(int, latest_arrival_time.split(':'))
-                    latest_arr_minutes = h * 60 + m
-                except ValueError as ve:
-                    logging.warning(f"Invalid latest_arrival_time format '{latest_arrival_time}': {ve}. This filter will not be applied.")
-                    latest_arr_minutes = None
-
-            for i, offer in enumerate(parsed_amadeus_response.data):
-                if not offer.itineraries:
-                    continue
-
-                # Apply Preferred Airlines Filter (local filtering for test consistency)
-                if preferred_airlines:
-                    offer_airlines = {seg.carrierCode for seg in offer.itineraries[0].segments}
-                    if not offer_airlines.intersection(preferred_airlines):
-                        logging.debug(
-                            f"Skipping offer {offer.id} because airlines {offer_airlines} "
-                            f"do not match preferred {preferred_airlines}"
-                        )
-                        continue
-
-                itinerary = offer.itineraries[0] # Assuming take the first itinerary for simplicity
-
-                # 1. Apply Max Layover Duration Filter
-                current_offer_layovers_ok = True
-                if max_layover_seconds is not None and len(itinerary.segments) > 1:
-                    for k in range(len(itinerary.segments) - 1):
-                        arrival_time_str = itinerary.segments[k].arrival.get("at")
-                        departure_time_str = itinerary.segments[k+1].departure.get("at")
-
-                        if arrival_time_str and departure_time_str:
-                            try:
-                                # Amadeus dates are ISO 8601, often with Z for UTC. datetime.fromisoformat handles this.
-                                arrival_dt = datetime.fromisoformat(arrival_time_str)
-                                departure_dt = datetime.fromisoformat(departure_time_str)
-                                layover_timedelta = departure_dt - arrival_dt
-                                current_layover_seconds = layover_timedelta.total_seconds()
-
-                                if current_layover_seconds < 0: 
-                                    pass # will be caught by positive duration check
-                                
-                                if current_layover_seconds > max_layover_seconds:
-                                    logging.debug(f"Skipping offer {offer.id} due to layover {current_layover_seconds}s > max {max_layover_seconds}s")
-                                    current_offer_layovers_ok = False
-                                    break
-                            except ValueError as ve:
-                                logging.warning(f"Error parsing date/time for layover calculation for offer {offer.id}: {ve}")
-                                # If dates are malformed, can't reliably filter by layover, so don't skip based on this specific issue.
-                        else:
-                            logging.warning(f"Missing arrival/departure time for layover calculation in offer {offer.id}. Cannot apply layover filter reliably for this segment.")
-                if not current_offer_layovers_ok:
-                    continue # Skip this offer if layover exceeds max
-
-                # 2. Apply Earliest Departure Time Filter
-                if earliest_dep_minutes is not None:
-                    first_segment = itinerary.segments[0]
-                    flight_departure_time_str = first_segment.departure.get("at", "T00:00:00").split('T')[-1][:5]
-                    try:
-                        flight_dep_hour, flight_dep_minute = map(int, flight_departure_time_str.split(':'))
-                        flight_dep_minutes = flight_dep_hour * 60 + flight_dep_minute
-                        if flight_dep_minutes < earliest_dep_minutes:
-                            logging.debug(f"Skipping offer {offer.id} due to early departure: {flight_departure_time_str} < {earliest_departure_time}")
-                            continue # Skip this offer
-                    except ValueError as ve:
-                        logging.warning(f"Error parsing flight departure time '{flight_departure_time_str}' for offer {offer.id}: {ve}. Cannot apply earliest departure filter.")
-
-                # 3. Apply Latest Arrival Time Filter
-                if latest_arr_minutes is not None:
-                    last_segment = itinerary.segments[-1]
-                    flight_arrival_time_str = last_segment.arrival.get("at", "T23:59:59").split('T')[-1][:5]
-                    try:
-                        flight_arr_hour, flight_arr_minute = map(int, flight_arrival_time_str.split(':'))
-                        flight_arr_minutes = flight_arr_hour * 60 + flight_arr_minute
-                        if flight_arr_minutes > latest_arr_minutes:
-                            logging.debug(f"Skipping offer {offer.id} due to late arrival: {flight_arrival_time_str} > {latest_arrival_time}")
-                            continue # Skip this offer
-                    except ValueError as ve:
-                        logging.warning(f"Error parsing flight arrival time '{flight_arrival_time_str}' for offer {offer.id}: {ve}. Cannot apply latest arrival filter.")
-
-                # If all filters pass, proceed to summarize
-                segments_summary_list: List[FlightSegmentSummary] = []
-                airline_names_set = set()
-
-                for segment in itinerary.segments:
-                    departure_time_str = segment.departure.get("at", "N/A").split("T")[-1][:5]
-                    arrival_time_str = segment.arrival.get("at", "N/A").split("T")[-1][:5]
-
-                    segments_summary_list.append(
-                        FlightSegmentSummary(
-                            departure_iata=segment.departure.get("iataCode", "N/A"),
-                            arrival_iata=segment.arrival.get("iataCode", "N/A"),  
-                            departure_time=departure_time_str,
-                            arrival_time=arrival_time_str,
-                            carrier_code=segment.carrierCode,
-                            number=segment.number,
-                            duration=segment.duration,
-                            number_of_stops=segment.numberOfStops
-                        )
-                    )
-                    airline_names_set.add(segment.carrierCode)
-
-                segments_description = " -> ".join([f"{s.departure_iata}-{s.arrival_iata}" for s in segments_summary_list])
-                total_stops = sum(s.numberOfStops for s in itinerary.segments)
-                if total_stops > 0:
-                    segments_description += f" ({total_stops} stop(s))"
-                else:
-                    segments_description += " (direct)"
-
-                flight_options_summary.append(
-                    FlightOptionSummary(
-                        id=f"FLIGHT_OPT_{i+1}",
-                        total_cost=offer.price.total,
-                        currency=offer.price.currency,
-                        duration=itinerary.duration,
-                        layovers=total_stops, 
-                        segments=segments_summary_list,
-                        segments_summary=segments_description,
-                        airline_names=", ".join(sorted(list(airline_names_set))), # Sort for consistent output
-                        notes=f"Bookable seats: {offer.numberOfBookableSeats}. Last ticketing date: {offer.lastTicketingDate}"
-                    )
+            dep_dt = datetime.strptime(departure_date, "%Y-%m-%d")
+            days_ahead = (dep_dt - datetime.now()).days
+            if days_ahead > 330:
+                logging.warning(f"⏳ Horizon Limit Reached: {days_ahead} days ahead.")
+                # directly returns a descriptive error without triggering a real API network request
+                return SearchFlightsOutput(
+                    flight_options=[],
+                    error=f"Airlines do not publish schedules more than 330 days in advance (Requested: {days_ahead} days ahead)."
                 )
+        except ValueError:
+            pass # If the date format is incorrect, allow it to proceed to the next step for processing
 
-            # Apply max_results after all filtering
-            final_flight_options = flight_options_summary[:max_results]
+        rapid_api_key = config.api.rapid_api_key
+        cookie = config.api.skyscanner_cookie
 
-            logging.info(f"Real flight search completed for '{origin}' to '{destination}'. Found {len(final_flight_options)} options after filtering.")
-            return SearchFlightsOutput(
-                flight_options=final_flight_options,
-                message=f"Search completed. Found {len(final_flight_options)} flight options.",
-                error=None
-            )
+        if not rapid_api_key:
+            return SearchFlightsOutput(flight_options=[], error="Configuration Error: RapidAPI Key missing.")
 
-        except json.JSONDecodeError as e:
-            logging.error(f"Invalid JSON input for search_flights: {e}", exc_info=True)
-            return SearchFlightsOutput(flight_options=[], message="Search failed.", error=f"The input query is not a valid JSON string. Details: {e}")
-        except ValidationError as e:
-            logging.error(f"Failed to validate Amadeus API response with Pydantic model: {e}", exc_info=True)
-            return SearchFlightsOutput(flight_options=[], message="Search failed.", error=f"Failed to parse flight API response due to data structure mismatch. Details: {e}")
-        except requests.exceptions.RequestException as e:
-            logging.error(f"HTTP request failed for search_flights: {e}", exc_info=True)
-            status_code = e.response.status_code if e.response is not None else "N/A"
-            error_msg = e.response.json() if e.response is not None and e.response.content else str(e)
-            return SearchFlightsOutput(flight_options=[], message="Search failed.", error=f"Failed to fetch flight data from API. Status: {status_code}, Details: {error_msg}")
-        except CustomException as e:
-            logging.error(f"Amadeus token error during flight search: {e}", exc_info=True)
-            return SearchFlightsOutput(flight_options=[], message="Search failed.", error=f"Amadeus authentication failed, cannot search flights. Details: {e.error_message if hasattr(e, 'error_message') else str(e)}")
-        except Exception as e:
-            logging.error(f"An unexpected error occurred during search_flights execution: {e}", exc_info=True)
-            return SearchFlightsOutput(flight_options=[], message="Search failed.", error=f"An internal error occurred during flight search. Exception: {str(e)}")
+        params = _build_skyscanner_params(origin, destination, departure_date, adults, kwargs)
         
-    def _run(self, **kwargs: Any) -> Any:
-        """Synchronous run method (not recommended for this async-first tool)."""
-        raise NotImplementedError("This tool is async-first. Please use .ainvoke() or await ._arun()")
+        if cookie:
+            params["cookie"] = cookie
+
+        headers = {
+            "X-RapidAPI-Key": rapid_api_key,
+            "X-RapidAPI-Host": "sky-scanner3.p.rapidapi.com"
+        }
+
+        try:
+            res_data = await _fetch_skyscanner_data(params, headers)
+            
+            max_results = kwargs.get("max_results", 5)
+            parsed_options = _parse_skyscanner_results(res_data, max_results, origin, destination, params["currency"])
+
+            if not parsed_options:
+                return SearchFlightsOutput(flight_options=[], message=f"No actual flights found for {origin} to {destination} on {departure_date}.")
+
+            return SearchFlightsOutput(flight_options=parsed_options, message="Success")
+
+        except Exception as e:
+            logging.error(f"Flight API Fail: {e}")
+            return SearchFlightsOutput(flight_options=[], error=f"Flight API unavailable: {str(e)}")
+
+    return search_flights

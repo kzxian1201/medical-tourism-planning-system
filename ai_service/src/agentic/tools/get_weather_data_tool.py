@@ -1,131 +1,63 @@
 # ai_service/src/agentic/tools/get_weather_data_tool.py
-import sys
 import asyncio
-import os
-import re
 import requests
-from pydantic import ValidationError
-from typing import Optional, Type, Any
-from ..logger import logging 
-from ..exception import CustomException 
-from ..models import GetWeatherDataInput, GetWeatherDataOutput, WeatherAPIResponse, Location, CurrentWeather, Forecast, Condition 
-from langchain_core.tools import BaseTool
+from langchain_core.tools import tool
+from ..logger import logging
+from ..models import GetWeatherDataInput, GetWeatherDataOutput, DataProvenance
+from ..config import AppConfig
 
-class GetWeatherDataTool(BaseTool): 
+def create_get_weather_data_tool(config: AppConfig):
     """
-    A tool to retrieve real-time and forecast weather data using WeatherAPI.com.
+    [Factory] Creates the Get Weather Data Tool.
+    Retrieves real-time and forecast weather data using WeatherAPI.com.
     """
-    name: str = "get_weather_data"
-    description: str = (
-        """Useful for retrieving weather forecast data for a specified destination and date (up to 14 days in the future for free tier).
-        Input MUST be a JSON object conforming to GetWeatherDataInput schema with 'destination' (string, city or coordinate) and 'date' (string, YYYY-MM-DD) keys.
-        Example: '{"destination": "London", "date": "2025-08-01"}'
-        The tool returns a JSON object conforming to GetWeatherDataOutput schema, containing detailed weather information (location, current weather, and forecast for the requested date).
-        """
-    )
-    args_schema: Type[GetWeatherDataInput] = GetWeatherDataInput 
+    GEO_URL = "https://geocoding-api.open-meteo.com/v1/search"
+    WEATHER_URL = "https://api.open-meteo.com/v1/forecast"
     
-    _WEATHER_API_KEY: Optional[str] = None
-    WEATHER_API_BASE_URL: str = "http://api.weatherapi.com/v1"
+    @tool("get_weather_data", args_schema=GetWeatherDataInput)
+    async def get_weather_data(destination: str, date: str) -> GetWeatherDataOutput:
+        """Get real-time weather forecasts based on actual city names.
+        Automatically perform geographic coordinate transformation and return medically sensitive weather data including precipitation probability.
+        """
+        if config.environment == "development":
+            logging.info(f"🌦️ [DEV MODE] Fetching real-time weather for: {destination}")
 
-    def __init__(self, weather_api_key: Optional[str] = None, **kwargs):
-        super().__init__(**kwargs)
         try:
-            self._WEATHER_API_KEY = weather_api_key if weather_api_key else os.getenv("WEATHER_API_KEY")
-            if not self._WEATHER_API_KEY:
-                logging.error("WEATHER_API_KEY environment variable not set or not provided.")
-                raise ValueError("WEATHER_API_KEY environment variable not set or not provided.")
-            logging.info("GetWeatherDataTool initialized.")
-        except Exception as e:
-            logging.error(f"Failed to initialize GetWeatherDataTool: {e}", exc_info=True)
-            raise CustomException(sys, e)
-        
-    def _create_empty_weather_response(self) -> WeatherAPIResponse:
-        return WeatherAPIResponse(
-            location=Location(name="N/A", region="N/A", country="N/A", lat=0.0, lon=0.0, tz_id="N/A", localtime_epoch=0, localtime="N/A"),
-            current=CurrentWeather(temp_c=0.0, temp_f=0.0, is_day=0, condition=Condition(text="N/A", icon="N/A", code=0), wind_mph=0.0, wind_kph=0.0, wind_degree=0, wind_dir="N/A", pressure_mb=0.0, pressure_in=0.0, precip_mm=0.0, precip_in=0.0, humidity=0, cloud=0, feelslike_c=0.0, feelslike_f=0.0, vis_km=0.0, vis_miles=0.0, uv=0.0, gust_mph=0.0, gust_kph=0.0),
-            forecast=Forecast(forecastday=[])
-        )
-    
-    async def _arun(self, **kwargs: Any) -> GetWeatherDataOutput:
-        """
-        Asynchronously fetches real weather data from WeatherAPI.com.
-        """
-        try:
-            tool_input = self.args_schema(**kwargs)
-        except ValidationError as e:
-            logging.error(f"Input validation failed for GetWeatherDataTool: {e}", exc_info=True)
-            return GetWeatherDataOutput(
-                weather_data=self._create_empty_weather_response(),
-                error=f"Input validation failed: {e}"
+            # Real geocoding
+            geo_res = await asyncio.to_thread(
+                requests.get,
+                GEO_URL,
+                params={"name": destination, "count": 1},
+                timeout=10
             )
-        
-        destination = tool_input.destination
-        date = tool_input.date
-
-        logging.info(f"Executing real weather data retrieval for destination: '{destination}', date: '{date}'.")
-
-        try:
-            if not destination or not date:
-                return GetWeatherDataOutput(
-                    weather_data=self._create_empty_weather_response(),
-                    error="Missing 'destination' or 'date' parameter."
-                )
+            geo_data = geo_res.json().get("results", [])
+            if not geo_data:
+                raise ValueError(f"Could not locate city: {destination}")
             
-            if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", date):
-                 return GetWeatherDataOutput(
-                    weather_data=self._create_empty_weather_response(),
-                    error=f"Invalid date format: '{date}'. Expected YYYY-MM-DD format."
-                 )
+            lat, lon = geo_data[0]["latitude"], geo_data[0]["longitude"]
+            city_full = f"{geo_data[0].get('name')}, {geo_data[0].get('country')}"
 
-            params = {
-                "key": self._WEATHER_API_KEY,
-                "q": destination,
-                "dt": date,
-                "aqi": "no",
-                "alerts": "no"
+            # Get real-time weather (Open-Meteo)
+            weather_params = {
+                "latitude": lat,
+                "longitude": lon,
+                "daily": "temperature_2m_max,temperature_2m_min,precipitation_probability_max,rain_sum",
+                "timezone": "auto"
             }
-            
-            api_endpoint = f"{self.WEATHER_API_BASE_URL}/forecast.json"
+            weather_res = await asyncio.to_thread(requests.get, WEATHER_URL, params=weather_params)
+            weather_data = weather_res.json()
 
-            loop = asyncio.get_event_loop()
-            response = await loop.run_in_executor(
-                None,
-                lambda: requests.get(api_endpoint, params=params, timeout=10)
+            prov = DataProvenance(
+                source=f"Open-Meteo Real-time (Location: {city_full})",
+                source_url="https://open-meteo.com/",
+                confidence_score=1.0,
+                is_mock_data=False
             )
-            response.raise_for_status()
             
-            json_data = response.json()
-            
-            # Validate raw API response with Pydantic model
-            parsed_data = WeatherAPIResponse(**json_data)
-            
-            logging.info(f"Real weather data fetched for '{destination}' on '{date}'.")
-            
-            # Return the structured Pydantic output
-            return GetWeatherDataOutput(weather_data=parsed_data, error=None)
+            return GetWeatherDataOutput(weather_data=weather_data, provenance=prov)
 
-        except ValidationError as ve:
-            logging.error(f"Failed to validate WeatherAPI response with Pydantic model for '{destination}, {date}': {ve}", exc_info=True)
-            return GetWeatherDataOutput(
-                weather_data=self._create_empty_weather_response(),
-                error=f"Failed to parse weather API response due to data structure mismatch. Details: {ve}"
-            )
-        except requests.exceptions.RequestException as e:
-            logging.error(f"HTTP request failed for get_weather_data: {e}", exc_info=True)
-            status_code = e.response.status_code if e.response is not None else "N/A"
-            error_msg = e.response.json() if e.response is not None and e.response.content else str(e)
-            return GetWeatherDataOutput(
-                weather_data=self._create_empty_weather_response(),
-                error=f"Failed to fetch weather data from API. Status: {status_code}, Details: {error_msg}"
-            )
         except Exception as e:
-            logging.error(f"An unexpected error occurred during get_weather_data execution for '{destination}, {date}': {e}", exc_info=True)
-            return GetWeatherDataOutput(
-                weather_data=self._create_empty_weather_response(),
-                error=f"An internal error occurred during weather data retrieval. Exception: {str(e)}"
-            )
-    
-    def _run(self, **kwargs: Any) -> Any:
-        """Synchronous run method (not recommended for this async-first tool)."""
-        raise NotImplementedError("This tool is async-first. Please use .ainvoke() or await ._arun()")
+            logging.error(f"Weather Tool Error: {e}")
+            return GetWeatherDataOutput(weather_data={}, error=str(e))
+            
+    return get_weather_data
