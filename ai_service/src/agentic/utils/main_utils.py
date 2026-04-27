@@ -24,18 +24,18 @@ if missing_keys:
 
 class LoadModel:
     @classmethod
-    def load_llm_model(cls, model_name: str = "gemini-2.5-flash", temperature: float = 0.7):
+    def load_llm_model(cls, model_name: str = "models/gemini-3.1-flash-lite-preview", temperature: float = 0.7):
         try:
             logging.info(f"Loading Google Gemini model: {model_name}")
             
             llm = ChatGoogleGenerativeAI(model=model_name,temperature=temperature,max_output_tokens=8192,)
             
             logging.info(f"Google Gemini model '{model_name}' loaded successfully.")
-            return llm 
+            return llm
 
         except Exception as e:
             logging.error(f"DEBUG: Critical error in LoadModel.load_llm_model(): {e}", exc_info=True)
-            print(f"\n--- DEBUG: Full Traceback from LoadModel.load_llm_model() ---")
+            print("\n--- DEBUG: Full Traceback from LoadModel.load_llm_model() ---")
             import traceback; traceback.print_exc(file=sys.stdout)
             print(f"DEBUG: Type of exception caught: {type(e)}")
             print(f"DEBUG: Message of exception caught: {e}")

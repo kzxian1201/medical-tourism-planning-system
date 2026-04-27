@@ -4,230 +4,119 @@
     "city": "Kuala Lumpur",
     "options": [
       {
-        "id": "my-kl-01",
-        "service_name": "MedicVan Express",
-        "type": "Medical Transport Van",
-        "provider": "MedicVan Malaysia",
-        "estimated_cost_per_transfer_usd": "$40 - $80",
-        "contact_info": "+60 3-9200 1234",
-        "notes": "Suitable for non-emergency transfers, requires 24-hour advance booking, supports various payment methods",
-        "country": "Malaysia",
-        "city": "Kuala Lumpur",
-        "accessibility_features": [
-          "Wheelchair ramp",
-          "Hydraulic lift",
-          "Stretcher accessible",
-          "Medical staff escort optional"
-        ]
-      },
-      {
-        "id": "my-kl-02",
-        "service_name": "GrabAssist",
+        "id": "trans_kl_01",
+        "service_name": "GrabCar Premium / GrabAssist",
         "type": "Ride-hailing",
-        "provider": "Grab Malaysia",
-        "estimated_cost_per_transfer_usd": "$10 - $25",
-        "contact_info": "",
-        "notes": "Book via Grab App, suitable for individuals with mild mobility impairment",
-        "country": "Malaysia",
-        "city": "Kuala Lumpur",
-        "accessibility_features": [
-          "Wheelchair ramp",
-          "Priority pickup"
-        ]
+        "provider": "Grab",
+        "estimated_cost_per_transfer_usd": "10-20",
+        "accessibility_features": ["App booking", "Trackable", "Wheelchair assistance (GrabAssist)"],
+        "image_url": "https://images.unsplash.com/photo-1549317661-bd32c8ce0be2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        "booking_link": "https://www.grab.com/my/download/",
+        "contact_info": "Download 'Grab' from App Store/Google Play"
       },
       {
-        "id": "my-kl-03",
-        "service_name": "KMI Ambulance",
-        "type": "Ambulance",
-        "provider": "KMI Healthcare",
-        "estimated_cost_per_transfer_usd": "$80 - $150",
-        "contact_info": "+60 3-4043 7654",
-        "notes": "Equipped with emergency first-aid equipment, suitable for inter-hospital transfers",
-        "country": "Malaysia",
-        "city": "Kuala Lumpur",
-        "accessibility_features": [
-          "Stretcher accessible",
-          "Oxygen support onboard",
-          "Medical staff escort optional"
-        ]
-      },
-      {
-        "id": "my-kl-04",
-        "service_name": "Private Hospital Shuttle",
-        "type": "Hospital Shuttle",
-        "provider": "Prince Court Medical Centre",
-        "estimated_cost_per_transfer_usd": "Free - $10",
-        "contact_info": "https://www.princecourt.com",
-        "notes": "Hospital-provided free or low-cost shuttle, requires booking through the official website",
-        "country": "Malaysia",
-        "city": "Kuala Lumpur",
-        "accessibility_features": [
-          "Wheelchair ramp",
-          "Hospital staff assistance"
-        ]
+        "id": "trans_kl_02",
+        "service_name": "KLIA Ekspres",
+        "type": "Train",
+        "provider": "ERL",
+        "estimated_cost_per_transfer_usd": "12",
+        "accessibility_features": ["Wheelchair accessible", "Fast", "Direct airport link"],
+        "image_url": "https://images.unsplash.com/photo-1541427468627-a89a96e5ca1d?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        "booking_link": "https://www.kliaekspres.com/",
+        "contact_info": "+603-2267 8000"
       }
     ]
   },
   {
-    "country": "Singapore",
-    "city": "Singapore",
+    "country": "Malaysia",
+    "city": "George Town",
     "options": [
       {
-        "id": "sg-sg-01",
-        "service_name": "Comfort Ambulance Services",
-        "type": "Ambulance",
-        "provider": "Comfort Ambulance",
-        "estimated_cost_per_transfer_usd": "$100 - $200",
-        "contact_info": "+65 6777 1111",
-        "notes": "Equipped with advanced medical facilities, suitable for emergency and non-emergency situations",
-        "country": "Singapore",
-        "city": "Singapore",
-        "accessibility_features": [
-          "Stretcher accessible",
-          "Oxygen support onboard",
-          "Medical staff escort optional",
-          "Patient hoist available"
-        ]
-      },
-      {
-        "id": "sg-sg-02",
-        "service_name": "SilverFleet Medical Transport",
-        "type": "Medical Transport Van",
-        "provider": "SilverFleet",
-        "estimated_cost_per_transfer_usd": "$50 - $90",
-        "contact_info": "+65 6255 5678",
-        "notes": "Suitable for elderly or chronic patients, offers door-to-door service",
-        "country": "Singapore",
-        "city": "Singapore",
-        "accessibility_features": [
-          "Hydraulic lift",
-          "Wheelchair ramp",
-          "Medical staff escort optional"
-        ]
-      },
-      {
-        "id": "sg-sg-03",
-        "service_name": "GrabAssist Plus",
+        "id": "trans_pen_01",
+        "service_name": "GrabCar Penang / GrabAssist",
         "type": "Ride-hailing",
-        "provider": "Grab Singapore",
-        "estimated_cost_per_transfer_usd": "$15 - $35",
-        "contact_info": "",
-        "notes": "Book via Grab App, fleet optimized for special needs",
-        "country": "Singapore",
-        "city": "Singapore",
-        "accessibility_features": [
-          "Wheelchair ramp",
-          "Priority pickup",
-          "Driver trained in assisting elderly"
-        ]
+        "provider": "Grab",
+        "estimated_cost_per_transfer_usd": "5-10",
+        "accessibility_features": ["App booking", "Door-to-door", "Wheelchair assistance (GrabAssist)"],
+        "image_url": "https://images.unsplash.com/photo-1593950315186-76a92975b60c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        "booking_link": "https://www.grab.com/my/download/",
+        "contact_info": "Download 'Grab' from App Store/Google Play"
       }
     ]
   },
   {
-    "country": "Indonesia",
-    "city": "Jakarta",
+    "country": "Malaysia",
+    "city": "Melaka City",
     "options": [
       {
-        "id": "id-jk-01",
-        "service_name": "ProCare Ambulance",
-        "type": "Ambulance",
-        "provider": "ProCare Indonesia",
-        "estimated_cost_per_transfer_usd": "$70 - $130",
-        "contact_info": "+62 21 5088 9876",
-        "notes": "Provides basic and advanced life support services, operating 24 hours",
-        "country": "Indonesia",
-        "city": "Jakarta",
-        "accessibility_features": [
-          "Stretcher accessible",
-          "Oxygen support onboard",
-          "Medical staff escort optional"
-        ]
+        "id": "trans_mel_01",
+        "service_name": "GrabCar Melaka / GrabAssist",
+        "type": "Ride-hailing",
+        "provider": "Grab",
+        "estimated_cost_per_transfer_usd": "4-8",
+        "accessibility_features": ["App booking", "Wheelchair assistance (GrabAssist)"],
+        "image_url": "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        "booking_link": "https://www.grab.com/my/download/",
+        "contact_info": "Download 'Grab' from App Store/Google Play"
       },
       {
-        "id": "id-jk-02",
-        "service_name": "Gojek Health Transport",
-        "type": "Motorbike or Car",
-        "provider": "Gojek",
-        "estimated_cost_per_transfer_usd": "$5 - $15",
-        "contact_info": "",
-        "notes": "Book via Gojek App, suitable for short distances and non-emergency situations",
-        "country": "Indonesia",
-        "city": "Jakarta",
-        "accessibility_features": [
-          "Driver assistance for boarding",
-          "Flexible pickup time"
-        ]
-      },
-      {
-        "id": "id-jk-03",
-        "service_name": "RS Siloam Shuttle",
-        "type": "Hospital Shuttle",
-        "provider": "Siloam Hospitals",
-        "estimated_cost_per_transfer_usd": "Free - $10",
-        "contact_info": "https://www.siloamhospitals.com",
-        "notes": "Requires booking through the hospital registration system, only for hospital-related services",
-        "country": "Indonesia",
-        "city": "Jakarta",
-        "accessibility_features": [
-          "Wheelchair ramp",
-          "Hospital staff assistance",
-          "AC and reclining seats"
-        ]
+        "id": "trans_mel_02",
+        "service_name": "Heritage Trishaw",
+        "type": "Tourist Transport",
+        "provider": "Local",
+        "estimated_cost_per_transfer_usd": "10",
+        "accessibility_features": ["Scenic", "Slow pace", "Easy boarding"],
+        "image_url": "https://images.unsplash.com/photo-1555026605-728b7e099684?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        "booking_link": "N/A (Arrange via hotel concierge)",
+        "contact_info": "On-street booking at major tourist hotspots like Jonker Street"
       }
     ]
   },
   {
-    "country": "Thailand",
-    "city": "Bangkok",
+    "country": "Malaysia",
+    "city": "Iskandar Puteri",
     "options": [
       {
-        "id": "th-bk-01",
-        "service_name": "Bangkok MedEvac",
-        "type": "Ambulance",
-        "provider": "Bangkok MedEvac Co.",
-        "estimated_cost_per_transfer_usd": "$90 - $180",
-        "contact_info": "+66 2 123 4567",
-        "notes": "Includes ICU mode support, suitable for severely ill patients",
-        "country": "Thailand",
-        "city": "Bangkok",
-        "accessibility_features": [
-          "Stretcher accessible",
-          "Oxygen support onboard",
-          "Patient hoist available",
-          "Medical staff escort optional"
-        ]
+        "id": "trans_joh_01",
+        "service_name": "GrabCar Johor / GrabAssist",
+        "type": "Ride-hailing",
+        "provider": "Grab",
+        "estimated_cost_per_transfer_usd": "5-12",
+        "accessibility_features": ["App booking", "Wheelchair assistance (GrabAssist)"],
+        "image_url": "https://images.unsplash.com/photo-1516733968668-dbdce39c4651?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        "booking_link": "https://www.grab.com/my/download/",
+        "contact_info": "Download 'Grab' from App Store/Google Play"
       },
       {
-        "id": "th-bk-02",
-        "service_name": "Bumrungrad Medical Shuttle",
-        "type": "Hospital Shuttle",
-        "provider": "Bumrungrad International Hospital",
-        "estimated_cost_per_transfer_usd": "Free - $20",
-        "contact_info": "https://www.bumrungrad.com",
-        "notes": "Free shuttle service requires advance booking through the hospital appointment system",
-        "country": "Thailand",
-        "city": "Bangkok",
-        "accessibility_features": [
-          "Wheelchair ramp",
-          "Hospital staff assistance",
-          "Comfort seating"
-        ]
-      },
+        "id": "trans_joh_02",
+        "service_name": "Cross-Border Shuttle",
+        "type": "Shuttle",
+        "provider": "Causeway Link",
+        "estimated_cost_per_transfer_usd": "2",
+        "accessibility_features": ["Link to Singapore", "Luggage space"],
+        "image_url": "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        "booking_link": "https://www.causewaylink.com.my/",
+        "contact_info": "+607-360 2244"
+      }
+    ]
+  },
+  {
+    "country": "Malaysia",
+    "city": "Johor Bahru",
+    "options": [
       {
-        "id": "th-bk-03",
-        "service_name": "ThaiHealth Private Transport",
-        "type": "Medical Transport Van",
-        "provider": "ThaiHealth Mobility",
-        "estimated_cost_per_transfer_usd": "$30 - $70",
-        "contact_info": "+66 81 234 5678",
-        "notes": "Supports intercity transfer services, provides basic medical facilities",
-        "country": "Thailand",
-        "city": "Bangkok",
+        "id": "trans_joh_03",
+        "service_name": "GrabCar Johor / GrabAssist",
+        "type": "Ride-hailing",
+        "provider": "Grab",
+        "estimated_cost_per_transfer_usd": "4-10",
         "accessibility_features": [
-          "Hydraulic lift",
-          "Wheelchair ramp",
-          "Medical escort optional"
-        ]
+          "App booking",
+          "Wheelchair assistance (GrabAssist)"
+        ],
+        "image_url": "https://images.unsplash.com/photo-1549317661-bd32c8ce0be2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        "booking_link": "https://www.grab.com/my/download/",
+        "contact_info": "Download 'Grab' from App Store/Google Play"
       }
     ]
   }

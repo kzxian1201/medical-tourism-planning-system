@@ -4,245 +4,146 @@
     "city": "Kuala Lumpur",
     "accommodations": [
       {
-        "id": "my-kl-001",
-        "name": "Kuala Lumpur Accessible Suites",
-        "location": "Bukit Bintang, Kuala Lumpur",
-        "country": "Malaysia",
-        "city": "Kuala Lumpur",
+        "id": "acc_my_kl_01",
+        "name": "Pullman KLCC",
         "min_cost_per_night_usd": 100,
         "max_cost_per_night_usd": 150,
-        "total_cost_estimate_usd": "Varies by stay duration",
-        "accessibility_features": [
-          "Roll-in shower",
-          "Grab bars in bathroom",
-          "Wide doorways (32+ inches)",
-          "Lowered light switches",
-          "Visual emergency alarms",
-          "Wheelchair accessible lobby",
-          "Elevator with Braille buttons"
-        ],
-        "availability": "Check hotel website for real-time availability.",
-        "contact_info": "+60 3-1234 5678",
-        "booking_link": "https://www.example.com/kl-accessible-suites",
-        "notes": "Located in the city center, close to top hospitals and shopping areas.",
-        "nearby_landmarks": ["Prince Court Medical Centre", "Gleneagles Kuala Lumpur", "Petronas Twin Towers", "Pavilion Kuala Lumpur", "KLCC Park", "KL Sentral"],
-        "image_url": "https://placehold.co/600x400/000000/FFFFFF?text=Accessible+Hotel+Image",
-        "star_rating": 4,
-        "accommodation_type": "hotel_suite",
-        "with_kitchen": 0,
-        "pet_friendly": 0,
-        "near_hospital_flag": 1
+        "accessibility_features": ["Wheelchair accessible", "Medical Concierge"],
+        "nearby_landmarks": ["Prince Court Medical Centre", "Pavilion Mall"],
+        "near_hospital_flag": true,
+        "image_url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        "booking_link": "https://all.accor.com/hotel/B213/index.en.shtml",
+        "contact_info": "+603-2170 8888",
+        "pet_friendly": false,
+        "with_kitchen": false
       },
       {
-        "id": "my-kl-002",
-        "name": "Golden Palm Service Apartments",
-        "location": "Jalan Ampang, Kuala Lumpur",
-        "country": "Malaysia",
-        "city": "Kuala Lumpur",
-        "min_cost_per_night_usd": 60,
-        "max_cost_per_night_usd": 100,
-        "total_cost_estimate_usd": "Varies by stay duration",
-        "accessibility_features": [
-          "Elevator access",
-          "Wide corridors",
-          "Bathroom support handles",
-          "Accessible parking",
-          "Staff trained in accessibility assistance"
-        ],
-        "availability": "Generally good, but book in advance for accessible units.",
-        "contact_info": "+60 3-8765 4321",
-        "booking_link": "https://www.example.com/golden-palm-apartments",
-        "notes": "Budget-friendly serviced apartment suitable for long stays.",
-        "nearby_landmarks": ["KPJ Ampang Puteri Specialist Hospital", "Petronas Twin Towers", "Ampang Park LRT Station"],
-        "image_url": "https://placehold.co/600x400/333333/FFFFFF?text=Service+Apartment",
-        "star_rating": 3,
-        "accommodation_type": "serviced_apartment",
-        "with_kitchen": 1,
-        "pet_friendly": 0,
-        "near_hospital_flag": 1
-      },
-      {
-        "id": "my-kl-003",
-        "name": "Regal Care Medical Residence",
-        "location": "Mid Valley City, Kuala Lumpur",
-        "country": "Malaysia",
-        "city": "Kuala Lumpur",
-        "min_cost_per_night_usd": 180,
-        "max_cost_per_night_usd": 250,
-        "total_cost_estimate_usd": "$1260 - $1750",
-        "accessibility_features": [
-          "Electric adjustable beds",
-          "24/7 nursing assistance",
-          "Room emergency call buttons",
-          "Accessible bathroom with roll-in shower",
-          "Ramp access throughout facility"
-        ],
-        "availability": "Requires pre-booking and medical documentation.",
-        "contact_info": "+60 3-9988 1122",
-        "booking_link": "https://www.example.com/regal-care",
-        "notes": "Specialized medical apartment catering to post-surgery patients.",
-        "nearby_landmarks": ["Pantai Hospital Kuala Lumpur", "University Malaya Medical Centre", "Mid Valley Megamall", "The Gardens Mall"],
-        "image_url": "https://placehold.co/600x400/222222/FFFFFF?text=Medical+Residence",
-        "star_rating": 5,
-        "accommodation_type": "medical_residence",
-        "with_kitchen": 0,
-        "pet_friendly": 0,
-        "near_hospital_flag": 1
-      }
-    ]
-  },
-  {
-    "country": "Singapore",
-    "city": "Singapore",
-    "accommodations": [
-      {
-        "id": "sg-sg-001",
-        "name": "Marina Bay Accessible Hotel",
-        "location": "Marina Bay, Singapore",
-        "country": "Singapore",
-        "city": "Singapore",
-        "min_cost_per_night_usd": 250,
-        "max_cost_per_night_usd": 350,
-        "total_cost_estimate_usd": "Varies by stay duration",
-        "accessibility_features": [
-          "Roll-in shower",
-          "Bathroom panic button",
-          "Braille signage",
-          "Accessible pool lift",
-          "Hearing impaired kits available"
-        ],
-        "availability": "Check hotel website for availability of ADA-compliant rooms.",
-        "contact_info": "+65 6777 8888",
-        "booking_link": "https://www.example.com/marina-accessible",
-        "notes": "Luxury hotel with medical shuttle service available upon request.",
-        "nearby_landmarks": ["Mount Elizabeth Novena Hospital", "Gleneagles Hospital Singapore", "Marina Bay Sands", "Gardens by the Bay", "Merlion Park"],
-        "image_url": "https://placehold.co/600x400/000000/FFFFFF?text=Singapore+Hotel",
-        "star_rating": 5,
-        "accommodation_type": "hotel",
-        "with_kitchen": 0,
-        "pet_friendly": 0,
-        "near_hospital_flag": 1
-      },
-      {
-        "id": "sg-sg-002",
-        "name": "ComfortStay Medical Inn",
-        "location": "Novena, Singapore",
-        "country": "Singapore",
-        "city": "Singapore",
-        "min_cost_per_night_usd": 90,
-        "max_cost_per_night_usd": 140,
-        "total_cost_estimate_usd": "$630 - $980",
-        "accessibility_features": [
-          "Wide door frames",
-          "Accessible restroom in room",
-          "Elevator to all floors",
-          "Visual emergency alert systems"
-        ],
-        "availability": "Generally available; contact directly for special room requests.",
-        "contact_info": "+65 6123 4567",
-        "booking_link": "https://www.example.com/comfortstay-inn",
-        "notes": "Mid-range inn near major clinics and diagnostic centers.",
-        "nearby_landmarks": ["Tan Tock Seng Hospital", "Novena MRT Station", "United Square Shopping Mall"],
-        "image_url": "https://placehold.co/600x400/444444/FFFFFF?text=Comfort+Inn",
-        "star_rating": 3,
-        "accommodation_type": "inn",
-        "with_kitchen": 0,
-        "pet_friendly": 0,
-        "near_hospital_flag": 1
-      }
-    ]
-  },
-  {
-    "country": "Indonesia",
-    "city": "Jakarta",
-    "accommodations": [
-      {
-        "id": "id-jk-001",
-        "name": "Jakarta Wellness Hotel",
-        "location": "Central Jakarta",
-        "country": "Indonesia",
-        "city": "Jakarta",
-        "min_cost_per_night_usd": 70,
-        "max_cost_per_night_usd": 120,
-        "total_cost_estimate_usd": "Varies by stay duration",
-        "accessibility_features": [
-          "Wheelchair accessible lobby and rooms",
-          "Grab bars in bathrooms",
-          "Lowered closet rods",
-          "Elevator with audio and Braille"
-        ],
-        "availability": "Book early during medical tourism peak seasons.",
-        "contact_info": "+62 21-5432 1111",
-        "booking_link": "https://www.example.com/jakarta-wellness-hotel",
-        "notes": "Medical staff on-call and translation services available.",
-        "nearby_landmarks": ["Siloam Hospitals Kebon Jeruk", "Mayapada Hospital Jakarta Selatan", "Grand Indonesia Shopping Town", "National Monument (Monas)"],
-        "image_url": "https://placehold.co/600x400/111111/FFFFFF?text=Jakarta+Wellness",
-        "star_rating": 4,
-        "accommodation_type": "hotel",
-        "with_kitchen": 0,
-        "pet_friendly": 0,
-        "near_hospital_flag": 1
-      }
-    ]
-  },
-  {
-    "country": "Thailand",
-    "city": "Bangkok",
-    "accommodations": [
-      {
-        "id": "th-bk-001",
-        "name": "Bangkok Medical Stay",
-        "location": "Sukhumvit, Bangkok",
-        "country": "Thailand",
-        "city": "Bangkok",
+        "id": "acc_my_kl_02",
+        "name": "Oakwood Hotel & Residence",
         "min_cost_per_night_usd": 80,
-        "max_cost_per_night_usd": 130,
-        "total_cost_estimate_usd": "Varies by stay duration",
-        "accessibility_features": [
-          "Accessible ramps",
-          "Roll-in showers",
-          "Visual fire alarms",
-          "Wheelchair-accessible hallways",
-          "Service animals allowed"
-        ],
-        "availability": "High occupancy; accessible rooms must be reserved in advance.",
-        "contact_info": "+66 2-123-4567",
-        "booking_link": "https://www.example.com/bangkok-med-stay",
-        "notes": "Connected to a medical concierge service for hospital visits.",
-        "nearby_landmarks": ["Bumrungrad International Hospital", "Samitivej Sukhumvit Hospital", "Terminal 21 Shopping Mall", "Asok BTS Station"],
-        "image_url": "https://placehold.co/600x400/000000/FFFFFF?text=Bangkok+Stay",
-        "star_rating": 3,
-        "accommodation_type": "medical_stay",
-        "with_kitchen": 0,
-        "pet_friendly": 1,
-        "near_hospital_flag": 1
+        "max_cost_per_night_usd": 120,
+        "accessibility_features": ["Spacious rooms", "Kitchenette", "Wheelchair accessible"],
+        "nearby_landmarks": ["Gleneagles KL", "Great Eastern Mall"],
+        "near_hospital_flag": true,
+        "image_url": "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        "booking_link": "https://www.oakwood.com/kuala-lumpur",
+        "contact_info": "+603-2720 3888",
+        "pet_friendly": true,
+        "with_kitchen": true
+      }
+    ]
+  },
+  {
+    "country": "Malaysia",
+    "city": "George Town",
+    "accommodations": [
+      {
+        "id": "acc_my_pen_01",
+        "name": "G Hotel Gurney",
+        "min_cost_per_night_usd": 110,
+        "max_cost_per_night_usd": 160,
+        "accessibility_features": ["Accessible rooms", "Wheelchair accessible", "Elevator access"],
+        "nearby_landmarks": ["Island Hospital", "Gurney Plaza"],
+        "near_hospital_flag": true,
+        "image_url": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        "booking_link": "https://www.ghotel.com.my/",
+        "contact_info": "+604-238 0000",
+        "pet_friendly": false,
+        "with_kitchen": false
       },
       {
-        "id": "th-bk-002",
-        "name": "Royal Orchid Service Apartment",
-        "location": "Silom Road, Bangkok",
-        "country": "Thailand",
-        "city": "Bangkok",
-        "min_cost_per_night_usd": 150,
-        "max_cost_per_night_usd": 200,
-        "total_cost_estimate_usd": "$1050 - $1400",
-        "accessibility_features": [
-          "Lift access to all floors",
-          "Kitchen counters at lowered height",
-          "Accessible balcony with railing",
-          "Auditory and visual emergency alerts"
-        ],
-        "availability": "Check availability on website or call for updates.",
-        "contact_info": "+66 2-888-7777",
-        "booking_link": "https://www.example.com/royal-orchid",
-        "notes": "Great for long stays during medical treatment programs.",
-        "nearby_landmarks": ["BNH Hospital", "Chulalongkorn Hospital", "Lumpini Park", "Saphan Taksin BTS Station"],
-        "image_url": "https://placehold.co/600x400/333333/FFFFFF?text=Service+Apartment",
-        "star_rating": 4,
-        "accommodation_type": "serviced_apartment",
-        "with_kitchen": 1,
-        "pet_friendly": 0,
-        "near_hospital_flag": 1
+        "id": "acc_my_pen_02",
+        "name": "Vouck Hotel Suites",
+        "min_cost_per_night_usd": 60,
+        "max_cost_per_night_usd": 90,
+        "accessibility_features": ["Wheelchair ramp", "Shuttle to Gleneagles"],
+        "nearby_landmarks": ["Gleneagles Penang"],
+        "near_hospital_flag": true,
+        "image_url": "https://images.unsplash.com/photo-1505691938895-1758d7feb511?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        "booking_link": "https://www.voukhotelsuites.com.my/",
+        "contact_info": "+604-373 1888",
+        "pet_friendly": false,
+        "with_kitchen": true
+      }
+    ]
+  },
+  {
+    "country": "Malaysia",
+    "city": "Bandar Sunway",
+    "accommodations": [
+      {
+        "id": "acc_my_sel_01",
+        "name": "Sunway Resort Hotel",
+        "min_cost_per_night_usd": 120,
+        "max_cost_per_night_usd": 180,
+        "accessibility_features": ["Direct hospital link bridge", "Wheelchair accessible", "Buggy service"],
+        "nearby_landmarks": ["Sunway Medical Centre", "Sunway Lagoon"],
+        "near_hospital_flag": true,
+        "image_url": "https://images.unsplash.com/photo-1542314831-c6a4d142104d?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        "booking_link": "https://www.sunwayhotels.com/sunway-resort",
+        "contact_info": "+603-7492 8000",
+        "pet_friendly": false,
+        "with_kitchen": false
+      }
+    ]
+  },
+  {
+    "country": "Malaysia",
+    "city": "Melaka City",
+    "accommodations": [
+      {
+        "id": "acc_my_mel_01",
+        "name": "DoubleTree by Hilton Melaka",
+        "min_cost_per_night_usd": 90,
+        "max_cost_per_night_usd": 130,
+        "accessibility_features": ["Wheelchair accessible", "Large Bathrooms", "Elevator access"],
+        "nearby_landmarks": ["Mahkota Medical Centre", "Dataran Pahlawan"],
+        "near_hospital_flag": true,
+        "image_url": "https://images.unsplash.com/photo-1590490360182-c33d57733427?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        "booking_link": "https://www.hilton.com/en/hotels/mkzmddi-doubletree-melaka/",
+        "contact_info": "+606-222 3333",
+        "pet_friendly": false,
+        "with_kitchen": false
+      }
+    ]
+  },
+  {
+    "country": "Malaysia",
+    "city": "Iskandar Puteri",
+    "accommodations": [
+      {
+        "id": "acc_my_joh_01",
+        "name": "Somerset Medini Iskandar",
+        "min_cost_per_night_usd": 70,
+        "max_cost_per_night_usd": 110,
+        "accessibility_features": ["Serviced Apartment", "Ground floor access", "Spacious layout"],
+        "nearby_landmarks": ["Gleneagles Medini", "Legoland"],
+        "near_hospital_flag": true,
+        "image_url": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        "booking_link": "https://www.discoverasr.com/en/somerset-serviced-residence/malaysia/somerset-medini-iskandar-puteri",
+        "contact_info": "+607-560 5555",
+        "pet_friendly": false,
+        "with_kitchen": true
+      }
+    ]
+  },
+  {
+    "country": "Malaysia",
+    "city": "Johor Bahru",
+    "accommodations": [
+      {
+        "id": "acc_my_joh_02",
+        "name": "Amari Johor Bahru",
+        "min_cost_per_night_usd": 80,
+        "max_cost_per_night_usd": 120,
+        "accessibility_features": ["Wheelchair accessible", "City center access", "Elevator access"],
+        "nearby_landmarks": ["KPJ Puteri Specialist", "City Square Mall"],
+        "near_hospital_flag": true,
+        "image_url": "https://images.unsplash.com/photo-1551882547-ff40c0d1398c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        "booking_link": "https://www.amari.com/johor-bahru",
+        "contact_info": "+607-266 8888",
+        "pet_friendly": false,
+        "with_kitchen": false
       }
     ]
   }

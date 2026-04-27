@@ -1,0 +1,12 @@
+{
+    "Malaysia": {
+        "medical_hubs": ["Kuala Lumpur", "Penang", "Selangor", "Johor", "Melaka"],
+        "default_hub": "Kuala Lumpur",
+        "currency": "MYR"
+    },
+    "Thailand": {
+        "medical_hubs": ["Bangkok", "Phuket"],
+        "default_hub": "Bangkok",
+        "currency": "THB"
+    }
+}

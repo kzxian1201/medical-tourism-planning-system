@@ -1,4 +1,3 @@
-# src/agentic/logger/__init__.py
 import logging
 import os
 from datetime import datetime
@@ -13,11 +12,14 @@ LOG_FILE_NAME = f"{datetime.now().strftime('%m_%d_%Y_%H_%M_%S')}.log"
 
 LOG_FILE_FULL_PATH = os.path.join(LOG_DIR_PATH, LOG_FILE_NAME)
 
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding='utf-8')
+
 logging.basicConfig(
     format="[ %(asctime)s ] %(name)s - %(levelname)s - %(message)s",
     level=logging.DEBUG,         
     handlers=[
-        logging.FileHandler(LOG_FILE_FULL_PATH), 
+        logging.FileHandler(LOG_FILE_FULL_PATH, encoding='utf-8'), 
         logging.StreamHandler(sys.stdout)     
     ]
 )
