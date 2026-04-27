@@ -1,0 +1,286 @@
+[
+    {
+        "test_id": "TC_001_FINANCIAL_BREAKER",
+        "description": "Financial circuit breaker test: High-cost surgery paired with an extremely low budget. Verify whether the system stops checking flight and hotel bookings during the medical treatment phase.",
+        "user_input": "I need a Heart Bypass Surgery (CABG) in KL. I only have $3000.",
+        "profile": {
+        "name": "Budget Stress Test",
+        "nationality": "Australian",
+        "preferences": {"dietary_needs": [], "accessibility_needs": []},
+        "current_trip": {
+            "origin_city": "Sydney",
+            "medical_destination_city": "Kuala Lumpur",
+            "estimated_budget_usd": "3000",
+            "departure_date": "2026-09-01",
+            "return_date": "2026-09-30",
+            "medical_purpose": "Heart Bypass Surgery (CABG)",
+            "companions": 0
+        }
+        },
+        "expected_behavior": {
+            "must_trigger_status": "Budget_Insufficient",
+            "forbidden_routes": ["travel_dept", "logistics_dept"],
+            "must_call_tools": ["medical_knowledge_base"]
+        }
+    },
+    {
+        "test_id": "TC_002_FLY_SAFE_VIOLATION",
+        "description": "Flight safety interception: Immediate return trip after major surgery. Verify whether the system identifies a 3-day recovery period as insufficient for long-haul flights.",
+        "user_input": "Need Knee Replacement in Penang. Must fly back 2 days after surgery.",
+        "profile": {
+        "name": "Safety Stress Test",
+        "nationality": "Australian",
+        "preferences": {"dietary_needs": [], "accessibility_needs": []},
+        "current_trip": {
+            "origin_city": "Sydney",
+            "medical_destination_city": "Penang",
+            "estimated_budget_usd": "20000",
+            "departure_date": "2026-10-01",
+            "return_date": "2026-10-05",
+            "medical_purpose": "Knee Replacement Surgery",
+            "companions": 0
+        }
+        },
+        "expected_behavior": {
+            "semantic_requirements": ["The proposal MUST contain an error message or warning stating that the flight dates are too soon after the surgery for a safe recovery."]
+        }
+    },
+    {
+        "test_id": "TC_003_ACCESSIBILITY_RAINY",
+        "description": "Logistics process test: wheelchair demand + rainy season travel. Verify whether the system simultaneously calls the knowledge base and weather tools.",
+        "user_input": "IVF treatment in Johor. I use a heavy motorized wheelchair.",
+        "profile": {
+        "name": "Accessibility Test",
+        "nationality": "Indonesian",
+        "preferences": {
+            "dietary_needs": ["Halal"],
+            "accessibility_needs": ["Motorized Wheelchair"]
+        },
+        "current_trip": {
+            "origin_city": "Jakarta",
+            "medical_destination_city": "Johor Bahru",
+            "estimated_budget_usd": "15000",
+            "departure_date": "2026-11-15",
+            "return_date": "2026-11-25",
+            "medical_purpose": "In Vitro Fertilization (IVF)",
+            "companions": 1
+        }
+        },
+        "expected_behavior": {
+            "must_trigger_status": "Plan_Finalized",
+            "must_include_keywords": ["Wheelchair", "Accessible", "GrabAssist"],
+            "must_call_tools": ["medical_knowledge_base", "get_weather_data"]
+        }
+    },
+    {
+        "test_id": "TC_004_VISA_RESEARCH_TRIGGER",
+        "description": " Research trigger test: Remote nationality. Verify whether the system proactively triggers Web Research to check visa requirements when the local cache expires.",
+        "user_input": "I am from Nigeria. Can I go to Melaka for a health screening?",
+        "profile": {
+        "name": "Visa Policy Test",
+        "nationality": "Nigerian",
+        "preferences": {"dietary_needs": [], "accessibility_needs": []},
+        "current_trip": {
+            "origin_city": "Lagos",
+            "medical_destination_city": "Melaka",
+            "estimated_budget_usd": "10000",
+            "departure_date": "2026-12-01",
+            "return_date": "2026-12-10",
+            "medical_purpose": "Premium Health Screening",
+            "companions": 0
+        }
+        },
+        "expected_behavior": {
+            "must_call_tools": ["web_research_tool", "update_visa_knowledge_tool"],
+            "must_include_keywords": ["Visa", "Requirements"]
+        }
+    },
+    {
+        "test_id": "TC_005_LOCATION_CONSISTENCY",
+        "description": "Location consistency test: Force cross-city travel. Verify whether the system can correct user errors and unify all logistics in the medical destination city.",
+        "user_input": "I want my heart surgery at Prince Court (KL), but book me a hotel in Penang.",
+        "profile": {
+        "name": "Geo Mismatch Test",
+        "nationality": "Australian",
+        "preferences": {"dietary_needs": [], "accessibility_needs": []},
+        "current_trip": {
+            "origin_city": "Sydney",
+            "medical_destination_city": "Kuala Lumpur",
+            "estimated_budget_usd": "30000",
+            "departure_date": "2026-08-01",
+            "return_date": "2026-08-20",
+            "medical_purpose": "Heart Bypass Surgery (CABG)",
+            "companions": 0
+        }
+        },
+        "expected_behavior": {
+            "must_trigger_status": "Plan_Finalized",
+            "must_include_keywords": ["Kuala Lumpur"],
+            "forbidden_routes": []
+        }
+    },
+    {
+        "test_id": "TC_006_COMPANION_LOGISTICS",
+        "description": "Companion test: With multiple companions. Verify whether the logistics Agent increases the vehicle capacity and insurance number.",
+        "user_input": "Health screening in KL for me and my 3 elderly parents.",
+        "profile": {
+        "name": "Family Trip Test",
+        "nationality": "Chinese",
+        "preferences": {"dietary_needs": [], "accessibility_needs": []},
+        "current_trip": {
+            "origin_city": "Beijing",
+            "medical_destination_city": "Kuala Lumpur",
+            "estimated_budget_usd": "20000",
+            "departure_date": "2026-05-10",
+            "return_date": "2026-05-15",
+            "medical_purpose": "Premium Health Screening",
+            "companions": 3
+        }
+        },
+        "expected_behavior": {
+            "must_include_keywords": ["Van", "Group Insurance", "4 people"],
+            "must_call_tools": ["calculate_budget_tool"]
+        }
+    },
+    {
+        "test_id": "TC_007_NON_INVASIVE_FLY_SAFE",
+        "description": "Non-invasive check test: The Agent will not incorrectly block flights after 2 days.",
+        "user_input": "Quick health check in KL. Flying in Monday, flying out Wednesday.",
+        "profile": {
+        "name": "Short Trip Test",
+        "nationality": "Australian",
+        "preferences": {"dietary_needs": [], "accessibility_needs": []},
+        "current_trip": {
+            "origin_city": "Sydney",
+            "medical_destination_city": "Kuala Lumpur",
+            "estimated_budget_usd": "5000",
+            "departure_date": "2026-09-01",
+            "return_date": "2026-09-03",
+            "medical_purpose": "Premium Health Screening",
+            "companions": 0
+        }
+        },
+        "expected_behavior": {
+            "must_trigger_status": "Plan_Finalized"
+        }
+    },
+    {
+        "test_id": "TC_008_DIETARY_PREFERENCE",
+        "description": "Preference drill test: Strict Vegan requirements. Verify whether the hotel and logistics include specific dietary remarks.",
+        "user_input": "Coming for Rhinoplasty. I am a strict Fruitarian/Vegan.",
+        "profile": {
+        "name": "Vegan Test",
+        "nationality": "British",
+        "preferences": {"dietary_needs": ["Strict Vegan"], "accessibility_needs": []},
+        "current_trip": {
+            "origin_city": "London",
+            "medical_destination_city": "Kuala Lumpur",
+            "estimated_budget_usd": "12000",
+            "departure_date": "2026-07-01",
+            "return_date": "2026-07-15",
+            "medical_purpose": "Rhinoplasty",
+            "companions": 0
+        }
+        },
+        "expected_behavior": {
+            "must_include_keywords": ["Vegan", "Plant-based"],
+            "must_call_tools": ["medical_knowledge_base"]
+        }
+    },
+    {
+        "test_id": "TC_009_CURRENCY_CONVERSION",
+        "description": "Financial calculation test: Foreign currency budget. Verify whether the system called the currency converter tool to process the calculation from AUD to MYR.",
+        "user_input": "I only have 5000 AUD for an IVF cycle in JB.",
+        "profile": {
+        "name": "Currency Test",
+        "nationality": "Australian",
+        "preferences": {"dietary_needs": [], "accessibility_needs": []},
+        "current_trip": {
+            "origin_city": "Sydney",
+            "medical_destination_city": "Johor Bahru",
+            "estimated_budget_usd": "15000",
+            "departure_date": "2026-04-20",
+            "return_date": "2026-05-05",
+            "medical_purpose": "In Vitro Fertilization (IVF)",
+            "companions": 0
+        }
+        },
+        "expected_behavior": {
+            "must_call_tools": ["currency_converter"]
+        }
+    },
+    {
+        "test_id": "TC_010_POST_OP_LOGISTICS",
+        "description": "Recovery process test: Post-op wheelchair demand + rainy season travel. Verify whether the system simultaneously calls the knowledge base and weather tools.",
+        "user_input": "Knee surgery. I will be unable to walk for 1 week after surgery.",
+        "profile": {
+        "name": "Post-Op Mobility Test",
+        "nationality": "Australian",
+        "preferences": {"dietary_needs": [], "accessibility_needs": []},
+        "current_trip": {
+            "origin_city": "Sydney",
+            "medical_destination_city": "Kuala Lumpur",
+            "estimated_budget_usd": "20000",
+            "departure_date": "2026-06-01",
+            "return_date": "2026-06-25",
+            "medical_purpose": "Knee Replacement Surgery",
+            "companions": 1
+        }
+        },
+        "expected_behavior": {
+            "must_include_keywords": ["Wheelchair", "Assistance"],
+            "must_call_tools": ["medical_knowledge_base", "get_weather_data"]
+        }
+    },
+    {
+        "test_id": "TC_011_EXTERNAL_API_FAILURE",
+        "description": "External API failure test: Simulate/assumeume the failure of an external API or the absence of data. Verify whether the system does not crash and gracefully degrades.",
+        "user_input": "I need a health screening in an extremely obscure city where you have no data.",
+        "profile": {
+        "name": "API Resilience Test",
+        "nationality": "Australian",
+        "preferences": {"dietary_needs": [], "accessibility_needs": []},
+        "current_trip": {
+            "origin_city": "Sydney",
+            "medical_destination_city": "UnknownCityX",
+            "estimated_budget_usd": "10000",
+            "departure_date": "2026-12-01",
+            "return_date": "2026-12-10",
+            "medical_purpose": "Premium Health Screening",
+            "companions": 0
+        }
+        },
+        "expected_behavior": {
+            "must_trigger_status": "Plan_Failed",
+            "semantic_requirements": [
+                "The system must politely inform the user that no medical facilities were found in the requested obscure location.",
+                "The system MUST NOT crash or enter an infinite loop."
+            ]
+        }
+    },
+    {
+        "test_id": "TC_012_CONTEXT_WINDOW_OVERFLOW",
+        "description": "Long dialog forgetting test: In a large amount of unnecessary information, hide critical medical history and test the attention recall rate and tool calls of the large model.",
+        "user_input": "Hi there! I am planning a trip. I love sunny weather, and last year I went to Bali, which was amazing. I ate a lot of seafood and enjoyed the beach. By the way, my dog's name is Rex. I am looking to get a Knee Replacement Surgery in Penang. Also, just so you know, I am highly allergic to Penicillin. My budget is around $25,000. I plan to travel alone and I like quiet hotel rooms.",
+        "profile": {
+        "name": "Chatty Patient",
+        "nationality": "American",
+        "preferences": {"dietary_needs": [], "accessibility_needs": []},
+        "current_trip": {
+            "origin_city": "New York",
+            "medical_destination_city": "Penang",
+            "estimated_budget_usd": "25000",
+            "departure_date": "2026-10-01",
+            "return_date": "2026-10-20",
+            "medical_purpose": "Knee Replacement Surgery",
+            "companions": 0
+        }
+        },
+        "expected_behavior": {
+        "must_call_tools": ["update_user_preferences"],
+        "semantic_requirements": [
+            "The system MUST extract the 'Penicillin allergy' and ensure it is recorded in the user profile or mentioned as a critical medical alert in the proposal."
+        ]
+        }
+    }
+]

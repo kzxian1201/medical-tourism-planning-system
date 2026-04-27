@@ -1,0 +1,90 @@
+[
+  {
+    "test_id": "TC_001_FINANCIAL_BREAKER",
+    "passed": true,
+    "attempts_used": 1,
+    "status": "Budget_Insufficient",
+    "errors": []
+  },
+  {
+    "test_id": "TC_002_FLY_SAFE_VIOLATION",
+    "passed": true,
+    "attempts_used": 1,
+    "status": "Plan_Finalized",
+    "errors": []
+  },
+  {
+    "test_id": "TC_003_ACCESSIBILITY_RAINY",
+    "passed": true,
+    "attempts_used": 1,
+    "status": "Plan_Finalized",
+    "errors": []
+  },
+  {
+    "test_id": "TC_004_VISA_RESEARCH_TRIGGER",
+    "passed": true,
+    "attempts_used": 1,
+    "status": "Plan_Finalized",
+    "errors": []
+  },
+  {
+    "test_id": "TC_005_LOCATION_CONSISTENCY",
+    "passed": true,
+    "attempts_used": 1,
+    "status": "Plan_Finalized",
+    "errors": []
+  },
+  {
+    "test_id": "TC_006_COMPANION_LOGISTICS",
+    "passed": true,
+    "attempts_used": 1,
+    "status": "Plan_Finalized",
+    "errors": []
+  },
+  {
+    "test_id": "TC_007_NON_INVASIVE_FLY_SAFE",
+    "passed": true,
+    "attempts_used": 1,
+    "status": "Plan_Finalized",
+    "errors": []
+  },
+  {
+    "test_id": "TC_008_DIETARY_PREFERENCE",
+    "passed": true,
+    "attempts_used": 1,
+    "status": "Plan_Finalized",
+    "errors": []
+  },
+  {
+    "test_id": "TC_009_CURRENCY_CONVERSION",
+    "passed": true,
+    "attempts_used": 1,
+    "status": "Plan_Finalized",
+    "errors": []
+  },
+  {
+    "test_id": "TC_010_POST_OP_LOGISTICS",
+    "passed": true,
+    "attempts_used": 1,
+    "status": "Plan_Finalized",
+    "errors": []
+  },
+  {
+    "test_id": "TC_011_EXTERNAL_API_FAILURE",
+    "passed": false,
+    "attempts_used": 2,
+    "status": "Plan_Failed",
+    "errors": [
+      "Semantic Check Failed: The system did not politely inform the user that no medical facilities were found in the requested obscure location. Instead, it provided a SYSTEM ERROR / VALIDATION FAILED message with a different reason."
+    ]
+  },
+  {
+    "test_id": "TC_012_CONTEXT_WINDOW_OVERFLOW",
+    "passed": false,
+    "attempts_used": 2,
+    "status": "Plan_Finalized",
+    "errors": [
+      "Semantic Check Failed: LLM Judge failed to execute: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kgbw5cj7eat8wne37tgarghg` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99218, Requested 3429. Please try again in 38m7.008s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}"
+    ]
+  }
+]
